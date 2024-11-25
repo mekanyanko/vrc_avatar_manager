@@ -1,16 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:vrc_avatar_manager/avatar_stat.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
-import 'package:collection/collection.dart';
 
 class AvatarView extends StatelessWidget {
-  const AvatarView({super.key, required this.avatar});
+  const AvatarView({super.key, required this.avatar, this.selected = false});
 
   final AvatarWithStat avatar;
+  final bool selected;
 
   static Image performanceIcon(PerformanceRatings p) {
     switch (p) {
@@ -31,9 +30,10 @@ class AvatarView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
         width: 200,
         height: 220,
+        color: selected ? Colors.green : null,
         child: Column(children: [
           CachedNetworkImage(
             imageUrl: avatar.thumbnailImageUrl,

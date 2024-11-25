@@ -1,0 +1,4 @@
+enum TagTarget {
+  name,
+  description,
+}
