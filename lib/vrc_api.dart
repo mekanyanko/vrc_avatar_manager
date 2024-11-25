@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:dio_response_validator/dio_response_validator.dart';
+import 'package:vrc_avatar_manager/app_dir.dart';
 import 'package:vrc_avatar_manager/store.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
@@ -37,7 +38,9 @@ class VrcApi {
   }
 
   static VrchatDart getVrchatDart(String account) {
-    return VrchatDart(cookiePath: ".cookie/$account", userAgent: userAgent);
+    var dir = "${AppDir.dir}/.cookie";
+    Directory(dir).createSync(recursive: true);
+    return VrchatDart(cookiePath: "$dir/$account", userAgent: userAgent);
   }
 
   static VrchatUserAgent? _userAgent;

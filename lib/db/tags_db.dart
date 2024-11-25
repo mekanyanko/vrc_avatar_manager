@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:isar/isar.dart';
+import 'package:vrc_avatar_manager/app_dir.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_avatar.dart';
 
@@ -11,9 +12,9 @@ class TagsDb {
   final Isar isar;
 
   static Future<TagsDb> get instance async {
-    await Directory(".db").create(recursive: true);
-    return _instance ??= TagsDb._(
-        await Isar.open([TagSchema, TagAvatarSchema], directory: ".db"));
+    await Directory("${AppDir.dir}/.db").create(recursive: true);
+    return _instance ??= TagsDb._(await Isar.open([TagSchema, TagAvatarSchema],
+        directory: "${AppDir.dir}/.db"));
   }
 
   Future<List<Tag>> getAll() async {
