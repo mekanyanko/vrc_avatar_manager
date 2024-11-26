@@ -106,14 +106,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
     });
   }
 
-  void _logout() async {
-    await _api.logout();
-    await Navigator.pushReplacementNamed(
-      context,
-      "/login",
-    );
-  }
-
   void _changeAvatar(String id) async {
     var res = await _api.changeAvatar(id);
     if (res.succeeded) {
@@ -222,11 +214,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
             icon: const Icon(Icons.refresh),
             onPressed: _loadAvatars,
             color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(width: 40),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
           ),
         ],
         bottom: PreferredSize(

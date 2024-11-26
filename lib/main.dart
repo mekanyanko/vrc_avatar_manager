@@ -30,7 +30,6 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => const HomePage(),
-        '/accounts': (BuildContext context) => const AccountsPage()
       },
       onGenerateRoute: (settings) {
         if (settings.name == "/accounts") {

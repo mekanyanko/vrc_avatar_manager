@@ -50,7 +50,6 @@ class TagsDb {
 
   Future<void> putLinked(Tag tag, TagAvatar tagAvatar) async {
     await isar.writeTxn(() async {
-      print(tag.tagAvatars.map((t) => t.avatarId));
       await isar.tagAvatars.put(tagAvatar);
       await tag.tagAvatars.save();
     });

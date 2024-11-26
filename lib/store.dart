@@ -1,5 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+const _defaultAccountId = "defaultAccountId";
+
 class Store {
   static final Store _store = Store._internal();
 
@@ -27,10 +29,10 @@ class Store {
     await storage.deleteAll();
   }
 
-  Future<String?> get defaultAccountId async => read("defaultAccountId");
+  Future<String?> get defaultAccountId async => read(_defaultAccountId);
   Future<void> setDefaultAccountId(String account) async =>
-      write("defaultAccount", account);
-  Future<void> deleteDefaultAccountId() async => delete("defaultAccountId");
+      write(_defaultAccountId, account);
+  Future<void> deleteDefaultAccountId() async => delete(_defaultAccountId);
 
   Future<void> setCredentials(
       String account, String username, String password) async {
