@@ -6,11 +6,13 @@ import 'package:vrc_avatar_manager/clickable_view.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
+import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_edit_dialog.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
+import 'package:vrchat_dart/vrchat_dart.dart';
 
 class AvatarsPage extends StatefulWidget {
   const AvatarsPage({super.key, required this.accountId});
@@ -43,6 +45,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
   bool _editTags = false;
   Tag? _editTagAvatarTag;
 
+  final Set<PerformanceRatings> _pcPerformanceBlocks = {};
+  final Set<PerformanceRatings> _androidPerformanceBlocks = {};
   String _search = "";
   final List<bool> _isPlatformSelected = [false, false, false];
   final Set<int> _selectedTagIds = {};
@@ -238,6 +242,17 @@ class _AvatarsPageState extends State<AvatarsPage> {
     } else if (_isPlatformSelected[2]) {
       avatars = avatars.where((avatar) => avatar.hasCrossPlatform);
     }
+    if (_pcPerformanceBlocks.isNotEmpty) {
+      avatars = avatars.where((avatar) =>
+          avatar.pc.performanceRating == null ||
+          !_pcPerformanceBlocks.contains(avatar.pc.performanceRating));
+    }
+    if (_androidPerformanceBlocks.isNotEmpty) {
+      avatars = avatars.where((avatar) =>
+          avatar.android.performanceRating == null ||
+          !_androidPerformanceBlocks
+              .contains(avatar.android.performanceRating));
+    }
     if (_search.isNotEmpty) {
       var search = _search.toLowerCase();
       avatars =
@@ -259,9 +274,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
               ),
         actions: [
           SizedBox(
-              width: 220,
+              width: 200,
               child: CheckboxListTile(
-                  title: const Text('アバター変更時確認'),
+                  title: const Text('アバター変更確認'),
                   value: _confirmWhenChangeAvatar,
                   onChanged: _setConfirmWhenChangeAvatar)),
           DropdownButton<SortBy>(
@@ -296,6 +311,34 @@ class _AvatarsPageState extends State<AvatarsPage> {
               },
               icon:
                   Icon(_ascending ? Icons.arrow_upward : Icons.arrow_downward)),
+          VrcIcons.pc,
+          PerformanceRankSelector(
+              selected: PerformanceRatings.values
+                  .toSet()
+                  .difference(_pcPerformanceBlocks),
+              onChanged: (p) {
+                setState(() {
+                  if (_pcPerformanceBlocks.contains(p)) {
+                    _pcPerformanceBlocks.remove(p);
+                  } else {
+                    _pcPerformanceBlocks.add(p);
+                  }
+                });
+              }),
+          VrcIcons.android,
+          PerformanceRankSelector(
+              selected: PerformanceRatings.values
+                  .toSet()
+                  .difference(_androidPerformanceBlocks),
+              onChanged: (p) {
+                setState(() {
+                  if (_androidPerformanceBlocks.contains(p)) {
+                    _androidPerformanceBlocks.remove(p);
+                  } else {
+                    _androidPerformanceBlocks.add(p);
+                  }
+                });
+              }),
           ToggleButtons(
             isSelected: _isPlatformSelected,
             onPressed: (int index) {
@@ -320,7 +363,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
           ),
           const SizedBox(width: 8),
           SizedBox(
-              width: 200,
+              width: 140,
               child: TextField(
                 controller: _searchController,
                 decoration: const InputDecoration(
@@ -330,7 +373,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                   _search = value;
                 }),
               )),
-          const SizedBox(width: 20),
+          const SizedBox(width: 8),
           IconButton(
             iconSize: 36,
             icon: const Icon(Icons.refresh),
