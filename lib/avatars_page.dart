@@ -267,14 +267,15 @@ class _AvatarsPageState extends State<AvatarsPage> {
 
   @override
   Widget build(BuildContext context) {
+    var filteredAvatars = _filteredAvatars.toList();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: _avatars.length != _newAvatars.length
             ? Text(
-                "${_avatars.length} avatars (fetching ${_newAvatars.length} avatars)")
+                "${filteredAvatars.length} avatars (fetching ${_newAvatars.length} avatars)")
             : Text(
-                '${_avatars.length} avatars',
+                '${filteredAvatars.length} avatars',
               ),
         actions: [
           SizedBox(
@@ -492,7 +493,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _filteredAvatars
+            children: filteredAvatars
                 .map((avatar) => ClickableView(
                       key: Key(avatar.id),
                       child: AvatarView(
