@@ -68,7 +68,7 @@ class _TagEditDialogState extends State<TagEditDialog> {
       content: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.always,
-          child: Column(children: [
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(
