@@ -32,7 +32,7 @@ jobs:
         run: mv build\windows\x64\runner\Release\ vrc_avatar_manager-${{ github.ref_name }}
 
       - name: Create Zip
-        uses: thedoctor0/zip-release@09336613be18a8208dfa66bd57efafd9e2685657
+        uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554
         with:
           type: "zip"
           directory: .
@@ -44,7 +44,7 @@ jobs:
       - run: dart run msix:pack
 
       - name: Make Release
-        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5
+        uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974
         with:
           tag_name: ${{ github.ref_name }}
           files: |
