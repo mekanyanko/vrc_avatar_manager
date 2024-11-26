@@ -45,6 +45,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   bool _editTagAvatars = false;
   bool _editTags = false;
   Tag? _editTagAvatarTag;
+  bool _selectSingleTag = false;
 
   final Set<PerformanceRatings> _pcPerformanceBlocks = {};
   final Set<PerformanceRatings> _androidPerformanceBlocks = {};
@@ -392,7 +393,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
             child: Row(
               children: [
                 SizedBox(
-                    width: 120,
+                    width: 160,
                     child: Row(
                       children: [
                         IconButton(
@@ -427,10 +428,24 @@ class _AvatarsPageState extends State<AvatarsPage> {
                               });
                             },
                             icon: const Icon(Icons.settings)),
+                        IconButton(
+                            style: _selectSingleTag
+                                ? IconButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onPrimary)
+                                : null,
+                            onPressed: () {
+                              setState(() {
+                                _selectSingleTag = !_selectSingleTag;
+                              });
+                            },
+                            icon: const Icon(Icons.check_box)),
                       ],
                     )),
                 SizedBox(
-                    width: MediaQuery.of(context).size.width - 120,
+                    width: MediaQuery.of(context).size.width - 160,
                     child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Wrap(
@@ -447,6 +462,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                                 .contains(tag.id)) {
                                               _selectedTagIds.remove(tag.id);
                                             } else {
+                                              if (_selectSingleTag) {
+                                                _selectedTagIds.clear();
+                                              }
                                               _selectedTagIds.add(tag.id);
                                             }
                                           });
