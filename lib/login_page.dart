@@ -225,6 +225,25 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: _loginByAuthToken,
               child: const Text("Login"),
             ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.red),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Column(
+                children: [
+                  Text("アカウント情報入力の危険性について",
+                      style: TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold)),
+                  Text("""本アプリはVRChatとは無関係の個人が提供しています。
+VRChatのアカウント情報を入力することは、そのアプリにアカウントの全ての操作を行える権限を与え、またそのアプリの脆弱性がアカウントに影響することを意味します。
+この危険性を考慮の上、アプリを信頼できる場合にのみ自己責任でご利用をお願い致します。（これは現行のVRChatの認証方式そのものによる問題なので、他のVRChat関連サービスにおいても同様にお気を付け下さい）""",
+                      style: TextStyle(color: Colors.red)),
+                ],
+              ),
+            )
           ],
         ),
       )),
