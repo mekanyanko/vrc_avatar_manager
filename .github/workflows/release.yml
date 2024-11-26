@@ -49,4 +49,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             vrc_avatar_manager-${{ github.ref_name }}.zip
-            build\windows\x64\runner\Release\vrc_avatar_manager.msix
+            build/windows/x64/runner/Release/vrc_avatar_manager.msix
