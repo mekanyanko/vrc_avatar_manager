@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:dio_response_validator/dio_response_validator.dart';
 import 'package:vrc_avatar_manager/app_dir.dart';
-import 'package:vrc_avatar_manager/store.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class VrcApi {
@@ -71,7 +70,6 @@ class VrcApi {
 
   Future<void> logout() async {
     await vrchatDart.auth.logout();
-    await Store().deleteDefaultAccountId();
   }
 
   Future<List<Avatar>?> avatars(int page) async {

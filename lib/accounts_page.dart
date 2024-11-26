@@ -65,6 +65,8 @@ class _AccountsPageState extends State<AccountsPage> {
   Future<void> _logout(String accountId) async {
     await Store().deleteCredentials(accountId);
     await Store().deleteDefaultAccountId();
+    var api = VrcApi.load(accountId);
+    await api.logout();
     await VrcApi.clearCookies(accountId);
     _showInfo("Logged out");
   }
