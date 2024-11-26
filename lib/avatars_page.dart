@@ -90,12 +90,16 @@ class _AvatarsPageState extends State<AvatarsPage> {
         ? <T extends Comparable<T>>(T a, T b) => a.compareTo(b)
         : <T extends Comparable<T>>(T a, T b) => b.compareTo(a);
     _sortedAvatars = switch (_sortBy) {
-      SortBy.createdAt => _avatars.sortedByCompare(
-          (avatar) => avatar.createdAt, comparator<DateTime>),
-      SortBy.updatedAt => _avatars.sortedByCompare(
-          (avatar) => avatar.updatedAt, comparator<DateTime>),
-      SortBy.name =>
-        _avatars.sortedByCompare((avatar) => avatar.name, comparator<String>),
+      SortBy.createdAt => _avatars.sorted((a, b) =>
+          comparator(a.createdAt, b.createdAt) * 10 +
+          comparator(a.updatedAt, b.updatedAt)),
+      SortBy.updatedAt => _avatars.sorted((a, b) =>
+          comparator(a.updatedAt, b.updatedAt) * 10 +
+          comparator(a.createdAt, b.createdAt)),
+      SortBy.name => _avatars.sorted((a, b) =>
+          comparator(a.name, b.name) * 100 +
+          comparator(a.createdAt, b.createdAt) * 10 +
+          comparator(a.updatedAt, b.updatedAt)),
     };
   }
 
