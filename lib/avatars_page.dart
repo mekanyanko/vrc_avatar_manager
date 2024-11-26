@@ -6,6 +6,7 @@ import 'package:vrc_avatar_manager/clickable_view.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
+import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/tag_edit_dialog.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
@@ -32,6 +33,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   MapValueSet<String, AvatarWithStat> _newAvatars =
       MapValueSet({}, (avatar) => avatar.id);
 
+  bool _confirmWhenChangeAvatar = false;
   bool _editTagAvatars = false;
   bool _editTags = false;
   Tag? _editTagAvatarTag;
@@ -53,6 +55,15 @@ class _AvatarsPageState extends State<AvatarsPage> {
       });
       _loadAvatars();
       _watchTagsDb();
+    });
+    _restoreSettings();
+  }
+
+  void _restoreSettings() async {
+    final prefs = await Prefs.instance;
+    var confirmWhenChangeAvatar = await prefs.confirmWhenChangeAvatar;
+    setState(() {
+      _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
     });
   }
 
@@ -106,7 +117,45 @@ class _AvatarsPageState extends State<AvatarsPage> {
     });
   }
 
-  void _changeAvatar(String id) async {
+  Future<void> _changeAvatar(String id) async {
+    if (_confirmWhenChangeAvatar) {
+      var avatar = _avatars.firstWhereOrNull((avatar) => avatar.id == id);
+      var confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("アバター変更"),
+              content: avatar == null
+                  ? const Text("?")
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [AvatarView(avatar: avatar)]),
+              actions: [
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                    child: const Text("Yes")),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: const Text("No")),
+              ],
+            );
+          });
+      if (confirmed != true) {
+        return;
+      }
+    }
+    await _doChangeAvatar(id);
+  }
+
+  Future<void> _doChangeAvatar(String id) async {
     var res = await _api.changeAvatar(id);
     if (res.succeeded) {
       _showInfo("Avatar changed");
@@ -121,6 +170,14 @@ class _AvatarsPageState extends State<AvatarsPage> {
       return;
     }
     await _editTagAvatarTag!.toggleAvatar(id, _tagsDb);
+  }
+
+  void _setConfirmWhenChangeAvatar(bool? value) async {
+    final prefs = await Prefs.instance;
+    setState(() {
+      _confirmWhenChangeAvatar = value ?? false;
+    });
+    await prefs.setConfirmWhenChangeAvatar(_confirmWhenChangeAvatar);
   }
 
   void _showInfo(String message) {
@@ -175,6 +232,12 @@ class _AvatarsPageState extends State<AvatarsPage> {
                 '${_avatars.length} avatars',
               ),
         actions: [
+          SizedBox(
+              width: 220,
+              child: CheckboxListTile(
+                  title: const Text('アバター変更時確認'),
+                  value: _confirmWhenChangeAvatar,
+                  onChanged: _setConfirmWhenChangeAvatar)),
           ToggleButtons(
             isSelected: _isPlatformSelected,
             onPressed: (int index) {
