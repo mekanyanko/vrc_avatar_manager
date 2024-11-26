@@ -7,6 +7,7 @@ import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
+import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_edit_dialog.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
@@ -33,7 +34,11 @@ class _AvatarsPageState extends State<AvatarsPage> {
   MapValueSet<String, AvatarWithStat> _newAvatars =
       MapValueSet({}, (avatar) => avatar.id);
 
+  List<AvatarWithStat> _sortedAvatars = [];
+
   bool _confirmWhenChangeAvatar = false;
+  bool _ascending = false;
+  SortBy _sortBy = SortBy.createdAt;
   bool _editTagAvatars = false;
   bool _editTags = false;
   Tag? _editTagAvatarTag;
@@ -62,13 +67,32 @@ class _AvatarsPageState extends State<AvatarsPage> {
   void _restoreSettings() async {
     final prefs = await Prefs.instance;
     var confirmWhenChangeAvatar = await prefs.confirmWhenChangeAvatar;
+    var ascending = await prefs.ascending;
+    var sortBy = await prefs.sortBy;
     setState(() {
       _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
+      _ascending = ascending;
+      _sortBy = sortBy;
+      _sortAvatars();
     });
   }
 
   Future<void> _ensureDb() async {
     _tagsDb = await TagsDb.instance(widget.accountId);
+  }
+
+  void _sortAvatars() {
+    var comparator = _ascending
+        ? <T extends Comparable<T>>(T a, T b) => a.compareTo(b)
+        : <T extends Comparable<T>>(T a, T b) => b.compareTo(a);
+    _sortedAvatars = switch (_sortBy) {
+      SortBy.createdAt => _avatars.sortedByCompare(
+          (avatar) => avatar.createdAt, comparator<DateTime>),
+      SortBy.updatedAt => _avatars.sortedByCompare(
+          (avatar) => avatar.updatedAt, comparator<DateTime>),
+      SortBy.name =>
+        _avatars.sortedByCompare((avatar) => avatar.name, comparator<String>),
+    };
   }
 
   void _loadAvatars() async {
@@ -88,12 +112,14 @@ class _AvatarsPageState extends State<AvatarsPage> {
         _newAvatars.addAll(avatarStats);
         setState(() {
           _avatars.addAll(avatarStats);
+          _sortAvatars();
         });
       }
       page++;
     }
     setState(() {
       _avatars.removeAll(_avatars.difference(_newAvatars));
+      _sortAvatars();
     });
   }
 
@@ -201,7 +227,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   }
 
   Iterable<AvatarWithStat> get _filteredAvatars {
-    Iterable<AvatarWithStat> avatars = _avatars;
+    Iterable<AvatarWithStat> avatars = _sortedAvatars;
     for (var tag in _selectedTags) {
       avatars = tag.filterAvatars(avatars);
     }
@@ -232,6 +258,38 @@ class _AvatarsPageState extends State<AvatarsPage> {
                 '${_avatars.length} avatars',
               ),
         actions: [
+          DropdownButton<SortBy>(
+            value: _sortBy,
+            onChanged: (SortBy? value) async {
+              setState(() {
+                _sortBy = value!;
+                _sortAvatars();
+              });
+              final prefs = await Prefs.instance;
+              await prefs.setSortBy(_sortBy);
+            },
+            items: SortBy.values
+                .map((sortBy) => DropdownMenuItem(
+                      value: sortBy,
+                      child: Text(switch (sortBy) {
+                        SortBy.createdAt => "Created At",
+                        SortBy.updatedAt => "Updated At",
+                        SortBy.name => "Name",
+                      }),
+                    ))
+                .toList(),
+          ),
+          IconButton(
+              onPressed: () async {
+                setState(() {
+                  _ascending = !_ascending;
+                  _sortAvatars();
+                });
+                final prefs = await Prefs.instance;
+                await prefs.setAscending(_ascending);
+              },
+              icon:
+                  Icon(_ascending ? Icons.arrow_upward : Icons.arrow_downward)),
           SizedBox(
               width: 220,
               child: CheckboxListTile(
