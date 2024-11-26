@@ -36,18 +36,20 @@ class AvatarView extends StatelessWidget {
         height: 220,
         color: selected ? Colors.green : null,
         child: Column(children: [
-          CachedNetworkImage(
-            imageUrl: avatar.thumbnailImageUrl,
-            httpHeaders: {"user-agent": VrcApi.userAgentString},
-            placeholder: (context, url) => const CircularProgressIndicator(),
-            fadeOutDuration: const Duration(milliseconds: 300),
-            fadeInDuration: const Duration(milliseconds: 300),
-            errorWidget: (context, url, error) {
-              print(error);
-              return const Icon(Icons.error);
-            },
-            cacheManager: ImageCacheManager.instance,
-          ),
+          SizedBox(
+              width: 200,
+              height: 150,
+              child: CachedNetworkImage(
+                imageUrl: avatar.thumbnailImageUrl,
+                httpHeaders: {"user-agent": VrcApi.userAgentString},
+                fadeOutDuration: const Duration(milliseconds: 200),
+                fadeInDuration: const Duration(milliseconds: 200),
+                errorWidget: (context, url, error) {
+                  print(error);
+                  return const Icon(Icons.error);
+                },
+                cacheManager: ImageCacheManager.instance,
+              )),
           Text(avatar.name),
           Row(
             children: [
