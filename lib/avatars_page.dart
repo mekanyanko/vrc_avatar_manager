@@ -258,6 +258,12 @@ class _AvatarsPageState extends State<AvatarsPage> {
                 '${_avatars.length} avatars',
               ),
         actions: [
+          SizedBox(
+              width: 220,
+              child: CheckboxListTile(
+                  title: const Text('アバター変更時確認'),
+                  value: _confirmWhenChangeAvatar,
+                  onChanged: _setConfirmWhenChangeAvatar)),
           DropdownButton<SortBy>(
             value: _sortBy,
             onChanged: (SortBy? value) async {
@@ -290,12 +296,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
               },
               icon:
                   Icon(_ascending ? Icons.arrow_upward : Icons.arrow_downward)),
-          SizedBox(
-              width: 220,
-              child: CheckboxListTile(
-                  title: const Text('アバター変更時確認'),
-                  value: _confirmWhenChangeAvatar,
-                  onChanged: _setConfirmWhenChangeAvatar)),
           ToggleButtons(
             isSelected: _isPlatformSelected,
             onPressed: (int index) {
