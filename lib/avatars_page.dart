@@ -9,6 +9,7 @@ import 'package:vrc_avatar_manager/db/tags_db.dart';
 import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
+import 'package:vrc_avatar_manager/tag_button.dart';
 import 'package:vrc_avatar_manager/tag_edit_dialog.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
@@ -436,18 +437,10 @@ class _AvatarsPageState extends State<AvatarsPage> {
                           spacing: 8,
                           children: _tags
                               .map((tag) => Column(children: [
-                                    ElevatedButton(
-                                        style: _selectedTagIds.contains(tag.id)
-                                            ? ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .primary,
-                                                foregroundColor:
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .onPrimary)
-                                            : null,
+                                    TagButton(
+                                        tag: tag,
+                                        selected:
+                                            _selectedTagIds.contains(tag.id),
                                         onPressed: () {
                                           setState(() {
                                             if (_selectedTagIds
@@ -457,8 +450,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                               _selectedTagIds.add(tag.id);
                                             }
                                           });
-                                        },
-                                        child: Text(tag.name)),
+                                        }),
                                     if (_editTags)
                                       IconButton(
                                         constraints: const BoxConstraints(),

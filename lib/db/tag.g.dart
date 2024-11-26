@@ -22,29 +22,39 @@ const TagSchema = CollectionSchema(
       name: r'caseSensitive',
       type: IsarType.bool,
     ),
-    r'invert': PropertySchema(
+    r'color': PropertySchema(
       id: 1,
+      name: r'color',
+      type: IsarType.long,
+    ),
+    r'inactiveColor': PropertySchema(
+      id: 2,
+      name: r'inactiveColor',
+      type: IsarType.long,
+    ),
+    r'invert': PropertySchema(
+      id: 3,
       name: r'invert',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 2,
+      id: 4,
       name: r'name',
       type: IsarType.string,
     ),
     r'search': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'search',
       type: IsarType.string,
     ),
     r'target': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'target',
       type: IsarType.byte,
       enumMap: _TagtargetEnumValueMap,
     ),
     r'type': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'type',
       type: IsarType.byte,
       enumMap: _TagtypeEnumValueMap,
@@ -90,11 +100,13 @@ void _tagSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeBool(offsets[0], object.caseSensitive);
-  writer.writeBool(offsets[1], object.invert);
-  writer.writeString(offsets[2], object.name);
-  writer.writeString(offsets[3], object.search);
-  writer.writeByte(offsets[4], object.target.index);
-  writer.writeByte(offsets[5], object.type.index);
+  writer.writeLong(offsets[1], object.color);
+  writer.writeLong(offsets[2], object.inactiveColor);
+  writer.writeBool(offsets[3], object.invert);
+  writer.writeString(offsets[4], object.name);
+  writer.writeString(offsets[5], object.search);
+  writer.writeByte(offsets[6], object.target.index);
+  writer.writeByte(offsets[7], object.type.index);
 }
 
 Tag _tagDeserialize(
@@ -105,14 +117,16 @@ Tag _tagDeserialize(
 ) {
   final object = Tag();
   object.caseSensitive = reader.readBool(offsets[0]);
+  object.color = reader.readLong(offsets[1]);
   object.id = id;
-  object.invert = reader.readBool(offsets[1]);
-  object.name = reader.readString(offsets[2]);
-  object.search = reader.readString(offsets[3]);
-  object.target = _TagtargetValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+  object.inactiveColor = reader.readLong(offsets[2]);
+  object.invert = reader.readBool(offsets[3]);
+  object.name = reader.readString(offsets[4]);
+  object.search = reader.readString(offsets[5]);
+  object.target = _TagtargetValueEnumMap[reader.readByteOrNull(offsets[6])] ??
       TagTarget.name;
   object.type =
-      _TagtypeValueEnumMap[reader.readByteOrNull(offsets[5])] ?? TagType.items;
+      _TagtypeValueEnumMap[reader.readByteOrNull(offsets[7])] ?? TagType.items;
   return object;
 }
 
@@ -126,15 +140,19 @@ P _tagDeserializeProp<P>(
     case 0:
       return (reader.readBool(offset)) as P;
     case 1:
-      return (reader.readBool(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
+      return (reader.readString(offset)) as P;
+    case 5:
+      return (reader.readString(offset)) as P;
+    case 6:
       return (_TagtargetValueEnumMap[reader.readByteOrNull(offset)] ??
           TagTarget.name) as P;
-    case 5:
+    case 7:
       return (_TagtypeValueEnumMap[reader.readByteOrNull(offset)] ??
           TagType.items) as P;
     default:
@@ -261,6 +279,58 @@ extension TagQueryFilter on QueryBuilder<Tag, Tag, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> colorEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'color',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> colorGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'color',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> colorLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'color',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> colorBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'color',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Tag, Tag, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -305,6 +375,59 @@ extension TagQueryFilter on QueryBuilder<Tag, Tag, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> inactiveColorEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'inactiveColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> inactiveColorGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'inactiveColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> inactiveColorLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'inactiveColor',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> inactiveColorBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'inactiveColor',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -756,6 +879,30 @@ extension TagQuerySortBy on QueryBuilder<Tag, Tag, QSortBy> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'color', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'color', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByInactiveColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inactiveColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByInactiveColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inactiveColor', Sort.desc);
+    });
+  }
+
   QueryBuilder<Tag, Tag, QAfterSortBy> sortByInvert() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'invert', Sort.asc);
@@ -830,6 +977,18 @@ extension TagQuerySortThenBy on QueryBuilder<Tag, Tag, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'color', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'color', Sort.desc);
+    });
+  }
+
   QueryBuilder<Tag, Tag, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -839,6 +998,18 @@ extension TagQuerySortThenBy on QueryBuilder<Tag, Tag, QSortThenBy> {
   QueryBuilder<Tag, Tag, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByInactiveColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inactiveColor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByInactiveColorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inactiveColor', Sort.desc);
     });
   }
 
@@ -910,6 +1081,18 @@ extension TagQueryWhereDistinct on QueryBuilder<Tag, Tag, QDistinct> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QDistinct> distinctByColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'color');
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QDistinct> distinctByInactiveColor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'inactiveColor');
+    });
+  }
+
   QueryBuilder<Tag, Tag, QDistinct> distinctByInvert() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'invert');
@@ -953,6 +1136,18 @@ extension TagQueryProperty on QueryBuilder<Tag, Tag, QQueryProperty> {
   QueryBuilder<Tag, bool, QQueryOperations> caseSensitiveProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'caseSensitive');
+    });
+  }
+
+  QueryBuilder<Tag, int, QQueryOperations> colorProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'color');
+    });
+  }
+
+  QueryBuilder<Tag, int, QQueryOperations> inactiveColorProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'inactiveColor');
     });
   }
 

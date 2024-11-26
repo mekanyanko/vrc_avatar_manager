@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:vrc_avatar_manager/color_picker_dialog.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_target.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
+import 'package:vrc_avatar_manager/tag_button.dart';
+import 'package:vrc_avatar_manager/text_color_for.dart';
 
 class TagEditDialog extends StatefulWidget {
   const TagEditDialog(
@@ -36,6 +39,8 @@ class _TagEditDialogState extends State<TagEditDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
+  Color _color = Colors.white;
+  Color _inactiveColor = Colors.white;
   TagType _type = TagType.items;
   TagTarget _target = TagTarget.name;
   final _searchController = TextEditingController();
@@ -54,6 +59,8 @@ class _TagEditDialogState extends State<TagEditDialog> {
     super.initState();
 
     _nameController.text = widget.tag.name;
+    _color = Color(widget.tag.validColor);
+    _inactiveColor = Color(widget.tag.validInactiveColor);
     _type = widget.tag.type;
     _target = widget.tag.target;
     _searchController.text = widget.tag.search;
@@ -76,6 +83,58 @@ class _TagEditDialogState extends State<TagEditDialog> {
               ),
               validator: (value) => value!.isEmpty ? 'Required' : null,
             ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                TagButton(
+                    tag: Tag()
+                      ..empty()
+                      ..name = "有効時色"
+                      ..color = _color.value
+                      ..inactiveColor = _inactiveColor.value,
+                    onPressed: () async {
+                      var color = await ColorPickerDialog.show(context, _color);
+                      if (color != null) {
+                        setState(() {
+                          _color = color;
+                        });
+                      }
+                    },
+                    selected: true),
+                TagButton(
+                    tag: Tag()
+                      ..empty()
+                      ..name = "無効時色"
+                      ..color = _color.value
+                      ..inactiveColor = _inactiveColor.value,
+                    onPressed: () async {
+                      var color =
+                          await ColorPickerDialog.show(context, _inactiveColor);
+                      if (color != null) {
+                        setState(() {
+                          _inactiveColor = color;
+                        });
+                      }
+                    },
+                    selected: false)
+              ],
+            ),
+            TextButton(
+                onPressed: () {
+                  setState(() {
+                    _inactiveColor = _color.inactiveColor;
+                  });
+                },
+                child: const Text("有効時色から無効時色を自動計算")),
+            TextButton(
+                onPressed: () {
+                  setState(() {
+                    _inactiveColor = Colors.white;
+                  });
+                },
+                child: const Text("無効時色は白")),
+            const SizedBox(height: 8),
             DropdownButtonFormField<TagType>(
               decoration: const InputDecoration(
                 labelText: 'タイプ',
@@ -154,6 +213,8 @@ class _TagEditDialogState extends State<TagEditDialog> {
 
             widget.tag
               ..name = _nameController.text
+              ..color = _color.value
+              ..inactiveColor = _inactiveColor.value
               ..type = _type
               ..target = _target
               ..search = _searchController.text

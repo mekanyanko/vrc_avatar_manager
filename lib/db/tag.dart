@@ -14,6 +14,16 @@ class Tag {
 
   late String name;
 
+  int color = 0xFF000000;
+
+  @ignore
+  int get validColor => color <= 0 ? 0xFF0066FF : color;
+
+  int inactiveColor = 0xFF444444;
+
+  @ignore
+  int get validInactiveColor => inactiveColor <= 0 ? 0xFFFFFFFF : inactiveColor;
+
   @enumerated
   late TagType type;
 
@@ -43,6 +53,8 @@ class Tag {
 
   void empty() {
     name = "";
+    color = 0xFF000000;
+    inactiveColor = 0xFF444444;
     type = TagType.items;
     target = TagTarget.name;
     search = "";
