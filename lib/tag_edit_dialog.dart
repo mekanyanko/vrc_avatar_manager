@@ -76,7 +76,10 @@ class _TagEditDialogState extends State<TagEditDialog> {
               ),
               validator: (value) => value!.isEmpty ? 'Required' : null,
             ),
-            DropdownButton<TagType>(
+            DropdownButtonFormField<TagType>(
+              decoration: const InputDecoration(
+                labelText: 'タイプ',
+              ),
               value: _type,
               onChanged: (value) {
                 setState(() {
@@ -84,12 +87,20 @@ class _TagEditDialogState extends State<TagEditDialog> {
                 });
               },
               items: TagType.values
-                  .map((e) =>
-                      DropdownMenuItem(value: e, child: Text(e.toString())))
+                  .map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(switch (e) {
+                        TagType.items => "リスト",
+                        TagType.simple => "文字列検索",
+                        TagType.regexp => "正規表現検索",
+                      })))
                   .toList(),
             ),
             if (_type != TagType.items)
-              DropdownButton<TagTarget>(
+              DropdownButtonFormField<TagTarget>(
+                decoration: const InputDecoration(
+                  labelText: '検索対象',
+                ),
                 value: _target,
                 onChanged: (value) {
                   setState(() {
@@ -97,8 +108,12 @@ class _TagEditDialogState extends State<TagEditDialog> {
                   });
                 },
                 items: TagTarget.values
-                    .map((e) =>
-                        DropdownMenuItem(value: e, child: Text(e.toString())))
+                    .map((e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(switch (e) {
+                          TagTarget.name => "name",
+                          TagTarget.description => "description",
+                        })))
                     .toList(),
               ),
             if (_type != TagType.items)
