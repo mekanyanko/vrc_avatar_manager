@@ -390,99 +390,110 @@ class _AvatarsPageState extends State<AvatarsPage> {
             preferredSize: const Size.fromHeight(50),
             child: Row(
               children: [
-                IconButton(
-                    onPressed: () {
-                      if (!_tagsDbLoaded) {
-                        return;
-                      }
-                      TagEditDialog.show(
-                          context, Tag()..empty(), true, _tagsDb);
-                    },
-                    icon: const Icon(Icons.add)),
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _editTagAvatars = !_editTagAvatars;
-                        if (_editTagAvatars) {
-                          _editTags = false;
-                        } else {
-                          _editTagAvatarTag = null;
-                        }
-                      });
-                    },
-                    icon: const Icon(Icons.edit)),
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _editTags = !_editTags;
-                        if (_editTags) {
-                          _editTagAvatars = false;
-                          _editTagAvatarTag = null;
-                        }
-                      });
-                    },
-                    icon: const Icon(Icons.settings)),
-                SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Wrap(
-                      spacing: 8,
-                      children: _tags
-                          .map((tag) => Column(children: [
-                                ElevatedButton(
-                                    style: _selectedTagIds.contains(tag.id)
-                                        ? ElevatedButton.styleFrom(
-                                            backgroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                            foregroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary)
-                                        : null,
-                                    onPressed: () {
-                                      setState(() {
-                                        if (_selectedTagIds.contains(tag.id)) {
-                                          _selectedTagIds.remove(tag.id);
-                                        } else {
-                                          _selectedTagIds.add(tag.id);
-                                        }
-                                      });
-                                    },
-                                    child: Text(tag.name)),
-                                if (_editTags)
-                                  IconButton(
-                                    constraints: const BoxConstraints(),
-                                    iconSize: 16,
-                                    onPressed: () {
-                                      TagEditDialog.show(
-                                          context, tag, false, _tagsDb);
-                                    },
-                                    icon: const Icon(Icons.settings),
-                                  ),
-                                if (_editTagAvatars &&
-                                    tag.type == TagType.items)
-                                  IconButton(
-                                    constraints: const BoxConstraints(),
-                                    iconSize: 16,
-                                    onPressed: () {
-                                      setState(() {
-                                        if (_editTagAvatarTag == tag) {
-                                          _editTagAvatarTag = null;
-                                        } else {
-                                          _editTagAvatarTag = tag;
-                                        }
-                                      });
-                                    },
-                                    icon: const Icon(Icons.edit),
-                                    style: _editTagAvatarTag == tag
-                                        ? IconButton.styleFrom(
-                                            backgroundColor: Colors.green,
-                                            foregroundColor: Colors.white,
-                                          )
-                                        : null,
-                                  ),
-                              ]))
-                          .toList(),
-                    ))
+                SizedBox(
+                    width: 120,
+                    child: Row(
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              if (!_tagsDbLoaded) {
+                                return;
+                              }
+                              TagEditDialog.show(
+                                  context, Tag()..empty(), true, _tagsDb);
+                            },
+                            icon: const Icon(Icons.add)),
+                        IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _editTagAvatars = !_editTagAvatars;
+                                if (_editTagAvatars) {
+                                  _editTags = false;
+                                } else {
+                                  _editTagAvatarTag = null;
+                                }
+                              });
+                            },
+                            icon: const Icon(Icons.edit)),
+                        IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _editTags = !_editTags;
+                                if (_editTags) {
+                                  _editTagAvatars = false;
+                                  _editTagAvatarTag = null;
+                                }
+                              });
+                            },
+                            icon: const Icon(Icons.settings)),
+                      ],
+                    )),
+                SizedBox(
+                    width: MediaQuery.of(context).size.width - 120,
+                    child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Wrap(
+                          spacing: 8,
+                          children: _tags
+                              .map((tag) => Column(children: [
+                                    ElevatedButton(
+                                        style: _selectedTagIds.contains(tag.id)
+                                            ? ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                foregroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimary)
+                                            : null,
+                                        onPressed: () {
+                                          setState(() {
+                                            if (_selectedTagIds
+                                                .contains(tag.id)) {
+                                              _selectedTagIds.remove(tag.id);
+                                            } else {
+                                              _selectedTagIds.add(tag.id);
+                                            }
+                                          });
+                                        },
+                                        child: Text(tag.name)),
+                                    if (_editTags)
+                                      IconButton(
+                                        constraints: const BoxConstraints(),
+                                        iconSize: 16,
+                                        onPressed: () {
+                                          TagEditDialog.show(
+                                              context, tag, false, _tagsDb);
+                                        },
+                                        icon: const Icon(Icons.settings),
+                                      ),
+                                    if (_editTagAvatars &&
+                                        tag.type == TagType.items)
+                                      IconButton(
+                                        constraints: const BoxConstraints(),
+                                        iconSize: 16,
+                                        onPressed: () {
+                                          setState(() {
+                                            if (_editTagAvatarTag == tag) {
+                                              _editTagAvatarTag = null;
+                                            } else {
+                                              _editTagAvatarTag = tag;
+                                            }
+                                          });
+                                        },
+                                        icon: const Icon(Icons.edit),
+                                        style: _editTagAvatarTag == tag
+                                            ? IconButton.styleFrom(
+                                                backgroundColor: Colors.green,
+                                                foregroundColor: Colors.white,
+                                              )
+                                            : null,
+                                      ),
+                                  ]))
+                              .toList(),
+                        )))
               ],
             )),
       ),
