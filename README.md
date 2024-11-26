@@ -6,4 +6,6 @@ VRC Avatar Manager
 
 ## LICENSE
 
-[Zlib License](LICENSE)
+Code: [Zlib License](LICENSE)
+
+Icons: VRChat, https://kokorobouzu.booth.pm/items/1448967
