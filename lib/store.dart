@@ -27,7 +27,28 @@ class Store {
     await storage.deleteAll();
   }
 
-  Future<String?> get account async => read("account");
-  Future<void> setAccount(String account) async => write("account", account);
-  Future<void> deleteAccount() async => delete("account");
+  Future<String?> get defaultAccountId async => read("defaultAccountId");
+  Future<void> setDefaultAccountId(String account) async =>
+      write("defaultAccount", account);
+  Future<void> deleteDefaultAccountId() async => delete("defaultAccountId");
+
+  Future<void> setCredentials(
+      String account, String username, String password) async {
+    await write("$account.username", username);
+    await write("$account.password", password);
+  }
+
+  Future<(String, String)?> getCredentials(String account) async {
+    var username = await read("$account.username");
+    var password = await read("$account.password");
+    if (username == null || password == null) {
+      return null;
+    }
+    return (username, password);
+  }
+
+  Future<void> deleteCredentials(String account) async {
+    await delete("$account.username");
+    await delete("$account.password");
+  }
 }

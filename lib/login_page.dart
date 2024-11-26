@@ -1,24 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:uuid/uuid.dart';
 import 'package:vrc_avatar_manager/store.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, required this.accountId});
+
+  final String accountId;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool _restored = false;
+
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _twoFactorController = TextEditingController();
   final _authTokenController = TextEditingController();
-  final _uuid = const Uuid();
+  bool _savePassword = false;
 
   VrcApi? _api;
+
+  @override
+  void initState() {
+    super.initState();
+    _restore();
+  }
+
+  Future<void> _restore() async {
+    var credentials = await Store().getCredentials(widget.accountId);
+    if (credentials != null) {
+      var (username, password) = credentials;
+      setState(() {
+        _usernameController.text = username;
+        _passwordController.text = password;
+        _savePassword = true;
+        _restored = true;
+      });
+    } else {
+      setState(() {
+        _restored = true;
+      });
+    }
+  }
 
   void _loginByUsernamePassword() async {
     var username = _usernameController.text;
@@ -27,8 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       _showError("Username and password cannot be empty");
       return;
     }
-    var account = _uuid.v4();
-    var api = VrcApi.load(account);
+    var api = VrcApi.load(widget.accountId);
     var res =
         await api.vrchatDart.auth.login(username: username, password: password);
     if (!res.succeeded) {
@@ -42,9 +67,13 @@ class _LoginPageState extends State<LoginPage> {
       });
       return;
     }
-    await Store().setAccount(account);
+    await Store().setDefaultAccountId(widget.accountId);
+    if (_savePassword) {
+      await Store().setCredentials(widget.accountId, username, password);
+    }
 
-    await Navigator.pushReplacementNamed(context, "/avatars");
+    await Navigator.pushReplacementNamed(context, "/avatars",
+        arguments: widget.accountId);
   }
 
   void _loginBy2FA() async {
@@ -64,8 +93,9 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    await Store().setAccount(_api!.account);
-    await Navigator.pushReplacementNamed(context, "/avatars");
+    await Store().setDefaultAccountId(widget.accountId);
+    await Navigator.pushReplacementNamed(context, "/avatars",
+        arguments: widget.accountId);
   }
 
   void _cancel2FA() {
@@ -81,14 +111,16 @@ class _LoginPageState extends State<LoginPage> {
       _showError("Invalid auth token");
       return;
     }
-    var account = _uuid.v4();
-    var api = VrcApi.loadByAuthToken(account, authToken);
+    var api = VrcApi.loadByAuthToken(widget.accountId, authToken);
     var checked = await api.checkValid();
     if (!checked) {
       _showError("Cannot login with that auth token");
       return;
     }
-    await Navigator.pushReplacementNamed(context, "/avatars");
+
+    await Store().setDefaultAccountId(widget.accountId);
+    await Navigator.pushReplacementNamed(context, "/avatars",
+        arguments: widget.accountId);
   }
 
   void _showError(String message) {
@@ -125,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             TextField(
               controller: _usernameController,
-              enabled: _api == null,
+              enabled: _restored && _api == null,
               decoration: const InputDecoration(
                 labelText: 'Username',
               ),
@@ -133,12 +165,22 @@ class _LoginPageState extends State<LoginPage> {
             ),
             TextField(
               controller: _passwordController,
-              enabled: _api == null,
+              enabled: _restored && _api == null,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Password',
               ),
               onSubmitted: (value) => _loginByUsernamePassword(),
+            ),
+            CheckboxListTile(
+              enabled: _restored && _api == null,
+              value: _savePassword,
+              onChanged: (value) {
+                setState(() {
+                  _savePassword = value!;
+                });
+              },
+              title: const Text("Save password"),
             ),
             if (_api != null)
               TextField(

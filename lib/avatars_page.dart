@@ -11,29 +11,26 @@ import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
 
 class AvatarsPage extends StatefulWidget {
-  const AvatarsPage({super.key});
+  const AvatarsPage({super.key, required this.accountId});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  final String accountId;
 
   @override
   State<AvatarsPage> createState() => _AvatarsPageState();
 }
 
 class _AvatarsPageState extends State<AvatarsPage> {
+  late final VrcApi _api;
+  late final TagsDb _tagsDb;
+  bool _tagsDbLoaded = false;
+
+  final _searchController = TextEditingController();
+
   final MapValueSet<String, AvatarWithStat> _avatars =
       MapValueSet({}, (avatar) => avatar.id);
 
   MapValueSet<String, AvatarWithStat> _newAvatars =
       MapValueSet({}, (avatar) => avatar.id);
-
-  final _searchController = TextEditingController();
 
   bool _editTagAvatars = false;
   bool _editTags = false;
@@ -41,8 +38,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
 
   String _search = "";
   final List<bool> _isPlatformSelected = [false, false, false];
-  List<bool> get _isTagSelected =>
-      _tags.map((tag) => _selectedTagIds.contains(tag.id)).toList();
   final Set<int> _selectedTagIds = {};
   List<Tag> _tags = [];
   Iterable<Tag> get _selectedTags =>
@@ -51,17 +46,26 @@ class _AvatarsPageState extends State<AvatarsPage> {
   @override
   void initState() {
     super.initState();
-    _loadAvatars();
-    _watchTagsDb();
+    _api = VrcApi.load(widget.accountId);
+    _ensureDb().then((_) {
+      setState(() {
+        _tagsDbLoaded = true;
+      });
+      _loadAvatars();
+      _watchTagsDb();
+    });
+  }
+
+  Future<void> _ensureDb() async {
+    _tagsDb = await TagsDb.instance(widget.accountId);
   }
 
   void _loadAvatars() async {
-    var api = await _api;
     _newAvatars =
         MapValueSet<String, AvatarWithStat>({}, (avatar) => avatar.id);
     var page = 1;
     while (true) {
-      var avatars = await api.avatars(page);
+      var avatars = await _api.avatars(page);
       if (avatars == null) {
         break;
       } else {
@@ -83,18 +87,16 @@ class _AvatarsPageState extends State<AvatarsPage> {
   }
 
   void _watchTagsDb() async {
-    var tagsDb = await TagsDb.instance;
-    tagsDb.watchTags(fireImmediately: true).listen((_) {
+    _tagsDb.watchTags(fireImmediately: true).listen((_) {
       _loadTags();
     });
-    tagsDb.watchTagAvatars(fireImmediately: true).listen((_) {
+    _tagsDb.watchTagAvatars(fireImmediately: true).listen((_) {
       _loadTags();
     });
   }
 
   void _loadTags() async {
-    var tagsDb = await TagsDb.instance;
-    var tags = await tagsDb.getAll();
+    var tags = await _tagsDb.getAll();
     setState(() {
       _tags = tags;
       if (_editTagAvatarTag != null) {
@@ -105,8 +107,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   }
 
   void _logout() async {
-    var api = await _api;
-    await api.logout();
+    await _api.logout();
     await Navigator.pushReplacementNamed(
       context,
       "/login",
@@ -114,8 +115,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   }
 
   void _changeAvatar(String id) async {
-    var api = await _api;
-    var res = await api.changeAvatar(id);
+    var res = await _api.changeAvatar(id);
     if (res.succeeded) {
       _showInfo("Avatar changed");
     } else {
@@ -128,10 +128,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
     if (_editTagAvatarTag == null) {
       return;
     }
-    await _editTagAvatarTag!.toggleAvatar(id);
+    await _editTagAvatarTag!.toggleAvatar(id, _tagsDb);
   }
-
-  Future<VrcApi> get _api async => (await VrcApi.loadCurrent())!;
 
   void _showInfo(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -237,7 +235,11 @@ class _AvatarsPageState extends State<AvatarsPage> {
               children: [
                 IconButton(
                     onPressed: () {
-                      TagEditDialog.show(context, Tag()..empty(), true);
+                      if (!_tagsDbLoaded) {
+                        return;
+                      }
+                      TagEditDialog.show(
+                          context, Tag()..empty(), true, _tagsDb);
                     },
                     icon: const Icon(Icons.add)),
                 IconButton(
@@ -294,7 +296,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                     constraints: const BoxConstraints(),
                                     iconSize: 16,
                                     onPressed: () {
-                                      TagEditDialog.show(context, tag, false);
+                                      TagEditDialog.show(
+                                          context, tag, false, _tagsDb);
                                     },
                                     icon: const Icon(Icons.settings),
                                   ),

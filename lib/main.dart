@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vrc_avatar_manager/app_dir.dart';
 import 'package:vrc_avatar_manager/avatars_page.dart';
 import 'package:vrc_avatar_manager/home_page.dart';
+import 'package:vrc_avatar_manager/accounts_page.dart';
 import 'package:vrc_avatar_manager/login_page.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 
@@ -29,8 +30,37 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => const HomePage(),
-        '/login': (BuildContext context) => const LoginPage(),
-        '/avatars': (BuildContext context) => const AvatarsPage(),
+        '/accounts': (BuildContext context) => const AccountsPage()
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == "/accounts") {
+          if (settings.arguments is String) {
+            return MaterialPageRoute(
+              builder: (context) =>
+                  AccountsPage(goAccount: settings.arguments as String),
+            );
+          }
+          return MaterialPageRoute(
+            builder: (context) => const AccountsPage(),
+          );
+        } else if (settings.name == "/login") {
+          if (settings.arguments is String) {
+            return MaterialPageRoute(
+              builder: (context) =>
+                  LoginPage(accountId: settings.arguments as String),
+            );
+          }
+          return MaterialPageRoute(
+            builder: (context) => const AccountsPage(),
+          );
+        } else if (settings.name == "/avatars" &&
+            settings.arguments is String) {
+          return MaterialPageRoute(
+            builder: (context) =>
+                AvatarsPage(accountId: settings.arguments as String),
+          );
+        }
+        return null;
       },
     );
   }

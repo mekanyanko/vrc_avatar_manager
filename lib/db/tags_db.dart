@@ -6,15 +6,20 @@ import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_avatar.dart';
 
 class TagsDb {
-  static TagsDb? _instance;
+  static final Map<String, TagsDb> _instances = {};
   const TagsDb._(this.isar);
 
   final Isar isar;
 
-  static Future<TagsDb> get instance async {
-    await Directory("${AppDir.dir}/.db").create(recursive: true);
-    return _instance ??= TagsDb._(await Isar.open([TagSchema, TagAvatarSchema],
-        directory: "${AppDir.dir}/.db"));
+  static Future<TagsDb> instance(String account) async {
+    if (_instances.containsKey(account)) {
+      return _instances[account]!;
+    }
+    var dir = "${AppDir.dir}/.tags/$account";
+    await Directory(dir).create(recursive: true);
+    return _instances[account] = TagsDb._(await Isar.open(
+        [TagSchema, TagAvatarSchema],
+        directory: dir, name: 'tags_$account'));
   }
 
   Future<List<Tag>> getAll() async {

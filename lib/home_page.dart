@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vrc_avatar_manager/loading.dart';
-import 'package:vrc_avatar_manager/vrc_api.dart';
+import 'package:vrc_avatar_manager/store.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,16 +26,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _login() async {
-    var api = await VrcApi.loadCurrent();
-    if (api == null || !await api.checkValid()) {
+    var accountId = await Store().defaultAccountId;
+    if (accountId == null) {
       await Navigator.pushReplacementNamed(
         context,
-        "/login",
+        "/accounts",
       );
     } else {
       await Navigator.pushReplacementNamed(
         context,
-        "/avatars",
+        "/accounts",
+        arguments: accountId,
       );
     }
   }

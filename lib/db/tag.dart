@@ -49,8 +49,7 @@ class Tag {
     caseSensitive = false;
   }
 
-  Future<void> toggleAvatar(String avatarId) async {
-    var tagsDb = await TagsDb.instance;
+  Future<void> toggleAvatar(String avatarId, TagsDb tagsDb) async {
     var tagAvatar =
         tagAvatars.firstWhereOrNull((ta) => ta.avatarId == avatarId);
     if (tagAvatar == null) {

@@ -5,9 +5,14 @@ import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
 
 class TagEditDialog extends StatefulWidget {
-  const TagEditDialog({super.key, required this.tag, required this.isNew});
+  const TagEditDialog(
+      {super.key,
+      required this.tag,
+      required this.isNew,
+      required this.tagsDb});
   final Tag tag;
   final bool isNew;
+  final TagsDb tagsDb;
 
   @override
   State<TagEditDialog> createState() => _TagEditDialogState();
@@ -16,11 +21,12 @@ class TagEditDialog extends StatefulWidget {
     BuildContext context,
     Tag tag,
     bool isNew,
+    TagsDb tagsDb,
   ) async {
     return showDialog<String>(
       context: context,
       builder: (context) {
-        return TagEditDialog(tag: tag, isNew: isNew);
+        return TagEditDialog(tag: tag, isNew: isNew, tagsDb: tagsDb);
       },
     );
   }
@@ -138,13 +144,13 @@ class _TagEditDialogState extends State<TagEditDialog> {
               ..search = _searchController.text
               ..invert = _invert
               ..caseSensitive = _caseSensitive;
-            await (await TagsDb.instance).put(widget.tag);
+            await widget.tagsDb.put(widget.tag);
 
             Navigator.of(context).pop();
           },
-          child: const Text('OK'),
           style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue, foregroundColor: Colors.white),
+          child: const Text('OK'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -155,12 +161,12 @@ class _TagEditDialogState extends State<TagEditDialog> {
         if (!widget.isNew)
           ElevatedButton(
             onPressed: () async {
-              await (await TagsDb.instance).delete(widget.tag);
+              await widget.tagsDb.delete(widget.tag);
               Navigator.of(context).pop();
             },
-            child: const Text('Delete'),
             style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Delete'),
           ),
       ],
     );

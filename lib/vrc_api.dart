@@ -6,27 +6,19 @@ import 'package:vrc_avatar_manager/store.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
 class VrcApi {
-  const VrcApi({required this.account, required this.vrchatDart});
+  const VrcApi({required this.accountId, required this.vrchatDart});
 
-  final String account;
+  final String accountId;
   final VrchatDart vrchatDart;
 
   static String appVersion = "0.0.1";
 
-  static Future<VrcApi?> loadCurrent() async {
-    var actualAccount = await Store().account;
-    if (actualAccount == null) {
-      return null;
-    }
-    return load(actualAccount);
+  static VrcApi load(String accountId) {
+    return VrcApi(accountId: accountId, vrchatDart: getVrchatDart(accountId));
   }
 
-  static VrcApi load(String account) {
-    return VrcApi(account: account, vrchatDart: getVrchatDart(account));
-  }
-
-  static VrcApi loadByAuthToken(String account, String authToken) {
-    var vrchatDart = getVrchatDart(account);
+  static VrcApi loadByAuthToken(String accountId, String authToken) {
+    var vrchatDart = getVrchatDart(accountId);
     var cookieManager = (vrchatDart.rawApi.dio.interceptors
         .firstWhere((i) => i is CookieManager) as CookieManager);
     cookieManager.cookieJar.saveFromResponse(
@@ -34,13 +26,22 @@ class VrcApi {
       Cookie.fromSetCookieValue(
           'auth=$authToken; Path=/; HttpOnly; SameSite=Lax;')
     ]);
-    return VrcApi(account: account, vrchatDart: vrchatDart);
+    return VrcApi(accountId: accountId, vrchatDart: vrchatDart);
   }
 
-  static VrchatDart getVrchatDart(String account) {
-    var dir = "${AppDir.dir}/.cookie";
+  static String cookiePath(String accountId) {
+    return "${AppDir.dir}/.cookie/$accountId";
+  }
+
+  static VrchatDart getVrchatDart(String accountId) {
+    var dir = cookiePath(accountId);
     Directory(dir).createSync(recursive: true);
-    return VrchatDart(cookiePath: "$dir/$account", userAgent: userAgent);
+    return VrchatDart(cookiePath: dir, userAgent: userAgent);
+  }
+
+  static Future<void> clearCookies(String accountId) async {
+    var dir = cookiePath(accountId);
+    await Directory(dir).delete(recursive: true);
   }
 
   static VrchatUserAgent? _userAgent;
@@ -70,7 +71,7 @@ class VrcApi {
 
   Future<void> logout() async {
     await vrchatDart.auth.logout();
-    await Store().deleteAccount();
+    await Store().deleteDefaultAccountId();
   }
 
   Future<List<Avatar>?> avatars(int page) async {
