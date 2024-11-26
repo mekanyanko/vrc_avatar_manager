@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
+import 'package:vrc_avatar_manager/image_cache_manager.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -39,10 +40,13 @@ class AvatarView extends StatelessWidget {
             imageUrl: avatar.thumbnailImageUrl,
             httpHeaders: {"user-agent": VrcApi.userAgentString},
             placeholder: (context, url) => const CircularProgressIndicator(),
+            fadeOutDuration: const Duration(milliseconds: 300),
+            fadeInDuration: const Duration(milliseconds: 300),
             errorWidget: (context, url, error) {
               print(error);
               return const Icon(Icons.error);
             },
+            cacheManager: ImageCacheManager.instance,
           ),
           Text(avatar.name),
           Row(
