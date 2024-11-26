@@ -318,6 +318,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
               VrcIcons.crossPlatform,
             ],
           ),
+          const SizedBox(width: 8),
           SizedBox(
               width: 200,
               child: TextField(
@@ -329,7 +330,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                   _search = value;
                 }),
               )),
-          const SizedBox(width: 40),
+          const SizedBox(width: 20),
           IconButton(
             iconSize: 36,
             icon: const Icon(Icons.refresh),
