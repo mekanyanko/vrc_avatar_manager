@@ -14,7 +14,7 @@ class TagButton extends StatelessWidget {
 
   static const Size _minimumSize = Size(43, 40);
   static const EdgeInsetsGeometry _padding =
-      EdgeInsets.only(left: 10, right: 10);
+      EdgeInsets.only(left: 12, right: 12);
   static final RoundedRectangleBorder _shape =
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(30));
 
