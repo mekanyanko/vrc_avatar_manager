@@ -4,9 +4,10 @@ import 'package:collection/collection.dart';
 
 class AvatarWithStat {
   AvatarWithStat(this.avatar) {
-    var ups = avatar.unityPackages.sortedByCompare(
-        (avatar) => avatar.createdAt ?? DateTime(2000),
-        (a, b) => -a.compareTo(b));
+    var ups = avatar.unityPackages
+        .sortedBy((avatar) => avatar.createdAt ?? DateTime(2000))
+        .reversed // latest first
+        .toList();
     pc = AvatarStat(
         main: ups.firstWhereOrNull((u) =>
             u.platform == "standalonewindows" && u.variant != "impostor"),
