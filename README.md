@@ -8,4 +8,4 @@ VRC Avatar Manager
 
 Code: [Zlib License](LICENSE)
 
-Icons: VRChat, https://kokorobouzu.booth.pm/items/1448967
+Icons: VRChat
