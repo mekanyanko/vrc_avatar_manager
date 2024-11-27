@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 
+const _tagDbVersion = "tagDbVersion";
 const _confirmWhenChangeAvatar = "confirmWhenChangeAvatar";
 const _ascending = "ascending";
 const _sortBy = "sortBy";
@@ -14,6 +15,14 @@ class Prefs {
 
   static Future<Prefs> get instance async {
     return _instance ??= Prefs._(await SharedPreferences.getInstance());
+  }
+
+  Future<int> tagDbVersion(String accountId) async {
+    return _prefs.getInt("$_tagDbVersion.$accountId") ?? 0;
+  }
+
+  Future<void> setTagDbVersion(String accountId, int value) async {
+    await _prefs.setInt("$_tagDbVersion.$accountId", value);
   }
 
   Future<bool> get confirmWhenChangeAvatar async {

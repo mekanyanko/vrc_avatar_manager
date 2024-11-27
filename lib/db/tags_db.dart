@@ -4,14 +4,16 @@ import 'package:isar/isar.dart';
 import 'package:vrc_avatar_manager/app_dir.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_avatar.dart';
+import 'package:vrc_avatar_manager/prefs.dart';
 
 const _intMin = -9223372036854775808;
 
 class TagsDb {
   static final Map<String, TagsDb> _instances = {};
-  const TagsDb._(this.isar);
+  const TagsDb._({required this.isar, required this.account});
 
   final Isar isar;
+  final String account;
 
   static Future<TagsDb> instance(String account) async {
     if (_instances.containsKey(account)) {
@@ -19,9 +21,10 @@ class TagsDb {
     }
     var dir = "${AppDir.dir}/.tags/$account";
     await Directory(dir).create(recursive: true);
-    return _instances[account] = TagsDb._(await Isar.open(
-        [TagSchema, TagAvatarSchema],
-        directory: dir, name: 'tags_$account'));
+    return _instances[account] = TagsDb._(
+        account: account,
+        isar: await Isar.open([TagSchema, TagAvatarSchema],
+            directory: dir, name: 'tags_$account'));
   }
 
   Future<List<Tag>> getAll() async {
@@ -87,6 +90,15 @@ class TagsDb {
   }
 
   Future<void> migrate() async {
+    final prefs = await Prefs.instance;
+    final version = await prefs.tagDbVersion(account);
+    if (version < 1) {
+      await _migrateTo1();
+      await prefs.setTagDbVersion(account, 1);
+    }
+  }
+
+  Future<void> _migrateTo1() async {
     final count = await isar.tags.where().count();
     for (var i = 0; i < count; i += 50) {
       await isar.writeTxn(() async {
