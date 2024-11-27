@@ -6,6 +6,7 @@ import 'package:vrc_avatar_manager/clickable_view.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
+import 'package:vrc_avatar_manager/order_dialog.dart';
 import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
@@ -393,7 +394,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
             child: Row(
               children: [
                 SizedBox(
-                    width: 160,
+                    width: 200,
                     child: Row(
                       children: [
                         IconButton(
@@ -417,6 +418,15 @@ class _AvatarsPageState extends State<AvatarsPage> {
                               });
                             },
                             icon: const Icon(Icons.edit)),
+                        IconButton(
+                            onPressed: () async {
+                              final tags = await OrderDialog.show(
+                                  context, _tags, (tag) => tag.name);
+                              if (tags != null) {
+                                await _tagsDb.reorder(tags);
+                              }
+                            },
+                            icon: const Icon(Icons.swap_vert)),
                         IconButton(
                             onPressed: () {
                               setState(() {
@@ -445,7 +455,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                       ],
                     )),
                 SizedBox(
-                    width: MediaQuery.of(context).size.width - 160,
+                    width: MediaQuery.of(context).size.width - 200,
                     child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Wrap(

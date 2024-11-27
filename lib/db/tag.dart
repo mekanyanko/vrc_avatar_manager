@@ -17,6 +17,8 @@ class Tag {
 
   Id id = Isar.autoIncrement;
 
+  int order = 0;
+
   late String name;
 
   int color = defaultColor.value;

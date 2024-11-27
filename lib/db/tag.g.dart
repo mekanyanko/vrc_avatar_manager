@@ -42,19 +42,24 @@ const TagSchema = CollectionSchema(
       name: r'name',
       type: IsarType.string,
     ),
-    r'search': PropertySchema(
+    r'order': PropertySchema(
       id: 5,
+      name: r'order',
+      type: IsarType.long,
+    ),
+    r'search': PropertySchema(
+      id: 6,
       name: r'search',
       type: IsarType.string,
     ),
     r'target': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'target',
       type: IsarType.byte,
       enumMap: _TagtargetEnumValueMap,
     ),
     r'type': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'type',
       type: IsarType.byte,
       enumMap: _TagtypeEnumValueMap,
@@ -104,9 +109,10 @@ void _tagSerialize(
   writer.writeLong(offsets[2], object.inactiveColor);
   writer.writeBool(offsets[3], object.invert);
   writer.writeString(offsets[4], object.name);
-  writer.writeString(offsets[5], object.search);
-  writer.writeByte(offsets[6], object.target.index);
-  writer.writeByte(offsets[7], object.type.index);
+  writer.writeLong(offsets[5], object.order);
+  writer.writeString(offsets[6], object.search);
+  writer.writeByte(offsets[7], object.target.index);
+  writer.writeByte(offsets[8], object.type.index);
 }
 
 Tag _tagDeserialize(
@@ -122,11 +128,12 @@ Tag _tagDeserialize(
   object.inactiveColor = reader.readLong(offsets[2]);
   object.invert = reader.readBool(offsets[3]);
   object.name = reader.readString(offsets[4]);
-  object.search = reader.readString(offsets[5]);
-  object.target = _TagtargetValueEnumMap[reader.readByteOrNull(offsets[6])] ??
+  object.order = reader.readLong(offsets[5]);
+  object.search = reader.readString(offsets[6]);
+  object.target = _TagtargetValueEnumMap[reader.readByteOrNull(offsets[7])] ??
       TagTarget.name;
   object.type =
-      _TagtypeValueEnumMap[reader.readByteOrNull(offsets[7])] ?? TagType.items;
+      _TagtypeValueEnumMap[reader.readByteOrNull(offsets[8])] ?? TagType.items;
   return object;
 }
 
@@ -148,11 +155,13 @@ P _tagDeserializeProp<P>(
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 6:
+      return (reader.readString(offset)) as P;
+    case 7:
       return (_TagtargetValueEnumMap[reader.readByteOrNull(offset)] ??
           TagTarget.name) as P;
-    case 7:
+    case 8:
       return (_TagtypeValueEnumMap[reader.readByteOrNull(offset)] ??
           TagType.items) as P;
     default:
@@ -573,6 +582,58 @@ extension TagQueryFilter on QueryBuilder<Tag, Tag, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> orderEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'order',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> orderGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'order',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> orderLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'order',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> orderBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'order',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Tag, Tag, QAfterFilterCondition> searchEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -927,6 +988,18 @@ extension TagQuerySortBy on QueryBuilder<Tag, Tag, QSortBy> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.desc);
+    });
+  }
+
   QueryBuilder<Tag, Tag, QAfterSortBy> sortBySearch() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'search', Sort.asc);
@@ -1037,6 +1110,18 @@ extension TagQuerySortThenBy on QueryBuilder<Tag, Tag, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'order', Sort.desc);
+    });
+  }
+
   QueryBuilder<Tag, Tag, QAfterSortBy> thenBySearch() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'search', Sort.asc);
@@ -1106,6 +1191,12 @@ extension TagQueryWhereDistinct on QueryBuilder<Tag, Tag, QDistinct> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QDistinct> distinctByOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'order');
+    });
+  }
+
   QueryBuilder<Tag, Tag, QDistinct> distinctBySearch(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1160,6 +1251,12 @@ extension TagQueryProperty on QueryBuilder<Tag, Tag, QQueryProperty> {
   QueryBuilder<Tag, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<Tag, int, QQueryOperations> orderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'order');
     });
   }
 

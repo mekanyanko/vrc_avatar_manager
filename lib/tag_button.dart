@@ -16,7 +16,7 @@ class TagButton extends StatelessWidget {
   static const EdgeInsetsGeometry _padding =
       EdgeInsets.only(left: 12, right: 12);
   static final RoundedRectangleBorder _shape =
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(30));
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(15));
 
   @override
   Widget build(BuildContext context) {

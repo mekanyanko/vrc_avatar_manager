@@ -23,7 +23,7 @@ class TagsDb {
   }
 
   Future<List<Tag>> getAll() async {
-    return isar.tags.where().findAll();
+    return isar.tags.where().sortByOrder().findAll();
   }
 
   Future<void> put(Tag tag) async {
@@ -35,6 +35,27 @@ class TagsDb {
   Future<void> delete(Tag tag) async {
     await isar.writeTxn(() async {
       await isar.tags.delete(tag.id);
+    });
+  }
+
+  Future<void> reorder(List<Tag> orderedTags) async {
+    await isar.writeTxn(() async {
+      final fetchedTags =
+          (await isar.tags.getAll(orderedTags.map((e) => e.id).toList()))
+              .where((t) => t != null)
+              .map((t) => t!)
+              .toList();
+      if (fetchedTags.length != orderedTags.length) {
+        throw Exception("Some tags are missing");
+      }
+      for (var i = 0; i < fetchedTags.length; i++) {
+        var tag = fetchedTags[i];
+        if (tag.id != orderedTags[i].id) {
+          throw Exception("Tags are not in the same order");
+        }
+        tag.order = i;
+      }
+      await isar.tags.putAll(fetchedTags);
     });
   }
 
