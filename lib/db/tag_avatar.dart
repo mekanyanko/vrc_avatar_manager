@@ -7,6 +7,7 @@ part 'tag_avatar.g.dart';
 class TagAvatar {
   Id id = Isar.autoIncrement;
 
+  @Index(unique: true, replace: true)
   late String avatarId;
 
   final tags = IsarLinks<Tag>();

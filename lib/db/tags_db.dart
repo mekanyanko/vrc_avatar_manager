@@ -5,6 +5,8 @@ import 'package:vrc_avatar_manager/app_dir.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_avatar.dart';
 
+const _intMin = -9223372036854775808;
+
 class TagsDb {
   static final Map<String, TagsDb> _instances = {};
   const TagsDb._(this.isar);
@@ -82,5 +84,22 @@ class TagsDb {
 
   Stream<void> watchTagAvatars({fireImmediately = false}) {
     return isar.tagAvatars.watchLazy(fireImmediately: fireImmediately);
+  }
+
+  Future<void> migrate() async {
+    final count = await isar.tags.where().count();
+    for (var i = 0; i < count; i += 50) {
+      await isar.writeTxn(() async {
+        final tags = await isar.tags.where().offset(i).limit(50).findAll();
+        final toPutTags = <Tag>[];
+        for (var tag in tags) {
+          if (tag.groupId == _intMin) {
+            tag.groupId = 0;
+            toPutTags.add(tag);
+          }
+        }
+        if (toPutTags.isNotEmpty) await isar.tags.putAll(toPutTags);
+      });
+    }
   }
 }

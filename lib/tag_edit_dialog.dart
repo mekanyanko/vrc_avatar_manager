@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vrc_avatar_manager/color_picker_dialog.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_target.dart';
@@ -39,6 +40,7 @@ class _TagEditDialogState extends State<TagEditDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
+  final _groupIdController = TextEditingController();
   Color _color = Colors.white;
   Color _inactiveColor = Colors.white;
   TagType _type = TagType.items;
@@ -59,6 +61,7 @@ class _TagEditDialogState extends State<TagEditDialog> {
     super.initState();
 
     _nameController.text = widget.tag.name;
+    _groupIdController.text = widget.tag.groupId.toString();
     _color = Color(widget.tag.validColor);
     _inactiveColor = Color(widget.tag.validInactiveColor);
     _type = widget.tag.type;
@@ -103,6 +106,15 @@ class _TagEditDialogState extends State<TagEditDialog> {
                         TagType.regexp => "正規表現検索",
                       })))
                   .toList(),
+            ),
+            TextFormField(
+              controller: _groupIdController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                labelText: 'タググループ(択一選択時)',
+              ),
+              validator: (value) => value!.isEmpty ? 'Required' : null,
             ),
             if (_type != TagType.items)
               DropdownButtonFormField<TagTarget>(
@@ -215,6 +227,7 @@ class _TagEditDialogState extends State<TagEditDialog> {
 
             widget.tag
               ..name = _nameController.text
+              ..groupId = int.tryParse(_groupIdController.text) ?? 0
               ..color = _color.value
               ..inactiveColor = _inactiveColor.value
               ..type = _type

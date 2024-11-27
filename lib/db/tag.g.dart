@@ -27,39 +27,44 @@ const TagSchema = CollectionSchema(
       name: r'color',
       type: IsarType.long,
     ),
-    r'inactiveColor': PropertySchema(
+    r'groupId': PropertySchema(
       id: 2,
+      name: r'groupId',
+      type: IsarType.long,
+    ),
+    r'inactiveColor': PropertySchema(
+      id: 3,
       name: r'inactiveColor',
       type: IsarType.long,
     ),
     r'invert': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'invert',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'name',
       type: IsarType.string,
     ),
     r'order': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'order',
       type: IsarType.long,
     ),
     r'search': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'search',
       type: IsarType.string,
     ),
     r'target': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'target',
       type: IsarType.byte,
       enumMap: _TagtargetEnumValueMap,
     ),
     r'type': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'type',
       type: IsarType.byte,
       enumMap: _TagtypeEnumValueMap,
@@ -106,13 +111,14 @@ void _tagSerialize(
 ) {
   writer.writeBool(offsets[0], object.caseSensitive);
   writer.writeLong(offsets[1], object.color);
-  writer.writeLong(offsets[2], object.inactiveColor);
-  writer.writeBool(offsets[3], object.invert);
-  writer.writeString(offsets[4], object.name);
-  writer.writeLong(offsets[5], object.order);
-  writer.writeString(offsets[6], object.search);
-  writer.writeByte(offsets[7], object.target.index);
-  writer.writeByte(offsets[8], object.type.index);
+  writer.writeLong(offsets[2], object.groupId);
+  writer.writeLong(offsets[3], object.inactiveColor);
+  writer.writeBool(offsets[4], object.invert);
+  writer.writeString(offsets[5], object.name);
+  writer.writeLong(offsets[6], object.order);
+  writer.writeString(offsets[7], object.search);
+  writer.writeByte(offsets[8], object.target.index);
+  writer.writeByte(offsets[9], object.type.index);
 }
 
 Tag _tagDeserialize(
@@ -124,16 +130,17 @@ Tag _tagDeserialize(
   final object = Tag();
   object.caseSensitive = reader.readBool(offsets[0]);
   object.color = reader.readLong(offsets[1]);
+  object.groupId = reader.readLong(offsets[2]);
   object.id = id;
-  object.inactiveColor = reader.readLong(offsets[2]);
-  object.invert = reader.readBool(offsets[3]);
-  object.name = reader.readString(offsets[4]);
-  object.order = reader.readLong(offsets[5]);
-  object.search = reader.readString(offsets[6]);
-  object.target = _TagtargetValueEnumMap[reader.readByteOrNull(offsets[7])] ??
+  object.inactiveColor = reader.readLong(offsets[3]);
+  object.invert = reader.readBool(offsets[4]);
+  object.name = reader.readString(offsets[5]);
+  object.order = reader.readLong(offsets[6]);
+  object.search = reader.readString(offsets[7]);
+  object.target = _TagtargetValueEnumMap[reader.readByteOrNull(offsets[8])] ??
       TagTarget.name;
   object.type =
-      _TagtypeValueEnumMap[reader.readByteOrNull(offsets[8])] ?? TagType.items;
+      _TagtypeValueEnumMap[reader.readByteOrNull(offsets[9])] ?? TagType.items;
   return object;
 }
 
@@ -151,17 +158,19 @@ P _tagDeserializeProp<P>(
     case 2:
       return (reader.readLong(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
-    case 4:
-      return (reader.readString(offset)) as P;
-    case 5:
       return (reader.readLong(offset)) as P;
-    case 6:
+    case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
       return (reader.readString(offset)) as P;
+    case 6:
+      return (reader.readLong(offset)) as P;
     case 7:
+      return (reader.readString(offset)) as P;
+    case 8:
       return (_TagtargetValueEnumMap[reader.readByteOrNull(offset)] ??
           TagTarget.name) as P;
-    case 8:
+    case 9:
       return (_TagtypeValueEnumMap[reader.readByteOrNull(offset)] ??
           TagType.items) as P;
     default:
@@ -332,6 +341,58 @@ extension TagQueryFilter on QueryBuilder<Tag, Tag, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'color',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> groupIdEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'groupId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> groupIdGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'groupId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> groupIdLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'groupId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterFilterCondition> groupIdBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'groupId',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -952,6 +1013,18 @@ extension TagQuerySortBy on QueryBuilder<Tag, Tag, QSortBy> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByGroupId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> sortByGroupIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Tag, Tag, QAfterSortBy> sortByInactiveColor() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'inactiveColor', Sort.asc);
@@ -1059,6 +1132,18 @@ extension TagQuerySortThenBy on QueryBuilder<Tag, Tag, QSortThenBy> {
   QueryBuilder<Tag, Tag, QAfterSortBy> thenByColorDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'color', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByGroupId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Tag, Tag, QAfterSortBy> thenByGroupIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupId', Sort.desc);
     });
   }
 
@@ -1172,6 +1257,12 @@ extension TagQueryWhereDistinct on QueryBuilder<Tag, Tag, QDistinct> {
     });
   }
 
+  QueryBuilder<Tag, Tag, QDistinct> distinctByGroupId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'groupId');
+    });
+  }
+
   QueryBuilder<Tag, Tag, QDistinct> distinctByInactiveColor() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'inactiveColor');
@@ -1233,6 +1324,12 @@ extension TagQueryProperty on QueryBuilder<Tag, Tag, QQueryProperty> {
   QueryBuilder<Tag, int, QQueryOperations> colorProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'color');
+    });
+  }
+
+  QueryBuilder<Tag, int, QQueryOperations> groupIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'groupId');
     });
   }
 

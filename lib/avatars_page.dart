@@ -86,6 +86,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
 
   Future<void> _ensureDb() async {
     _tagsDb = await TagsDb.instance(widget.accountId);
+    await _tagsDb.migrate();
   }
 
   void _sortAvatars() {
@@ -473,7 +474,11 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                               _selectedTagIds.remove(tag.id);
                                             } else {
                                               if (_selectSingleTag) {
-                                                _selectedTagIds.clear();
+                                                _selectedTagIds.removeAll(_tags
+                                                    .where((t) =>
+                                                        t.groupId ==
+                                                        tag.groupId)
+                                                    .map((t) => t.id));
                                               }
                                               _selectedTagIds.add(tag.id);
                                             }

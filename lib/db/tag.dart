@@ -19,6 +19,8 @@ class Tag {
 
   int order = 0;
 
+  int groupId = 0;
+
   late String name;
 
   int color = defaultColor.value;
