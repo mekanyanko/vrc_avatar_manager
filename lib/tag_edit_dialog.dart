@@ -84,57 +84,6 @@ class _TagEditDialogState extends State<TagEditDialog> {
               validator: (value) => value!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [
-                TagButton(
-                    tag: Tag()
-                      ..empty()
-                      ..name = "有効時色"
-                      ..color = _color.value
-                      ..inactiveColor = _inactiveColor.value,
-                    onPressed: () async {
-                      var color = await ColorPickerDialog.show(context, _color);
-                      if (color != null) {
-                        setState(() {
-                          _color = color;
-                        });
-                      }
-                    },
-                    selected: true),
-                TagButton(
-                    tag: Tag()
-                      ..empty()
-                      ..name = "無効時色"
-                      ..color = _color.value
-                      ..inactiveColor = _inactiveColor.value,
-                    onPressed: () async {
-                      var color =
-                          await ColorPickerDialog.show(context, _inactiveColor);
-                      if (color != null) {
-                        setState(() {
-                          _inactiveColor = color;
-                        });
-                      }
-                    },
-                    selected: false)
-              ],
-            ),
-            TextButton(
-                onPressed: () {
-                  setState(() {
-                    _inactiveColor = _color.inactiveColor;
-                  });
-                },
-                child: const Text("有効時色から無効時色を自動計算")),
-            TextButton(
-                onPressed: () {
-                  setState(() {
-                    _inactiveColor = Colors.white;
-                  });
-                },
-                child: const Text("無効時色は白")),
-            const SizedBox(height: 8),
             DropdownButtonFormField<TagType>(
               decoration: const InputDecoration(
                 labelText: 'タイプ',
@@ -203,6 +152,59 @@ class _TagEditDialogState extends State<TagEditDialog> {
                 },
                 title: const Text("大文字小文字を区別する"),
               ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                TagButton(
+                    tag: Tag()
+                      ..empty()
+                      ..name = "有効時色"
+                      ..color = _color.value
+                      ..inactiveColor = _inactiveColor.value,
+                    onPressed: () async {
+                      var color = await ColorPickerDialog.show(context, _color,
+                          defaultColor: Tag.defaultColor);
+                      if (color != null) {
+                        setState(() {
+                          _color = color;
+                        });
+                      }
+                    },
+                    selected: true),
+                TagButton(
+                    tag: Tag()
+                      ..empty()
+                      ..name = "無効時色"
+                      ..color = _color.value
+                      ..inactiveColor = _inactiveColor.value,
+                    onPressed: () async {
+                      var color = await ColorPickerDialog.show(
+                          context, _inactiveColor,
+                          defaultColor: Tag.defaultInactiveColor);
+                      if (color != null) {
+                        setState(() {
+                          _inactiveColor = color;
+                        });
+                      }
+                    },
+                    selected: false)
+              ],
+            ),
+            TextButton(
+                onPressed: () {
+                  setState(() {
+                    _inactiveColor = _color.inactiveColor;
+                  });
+                },
+                child: const Text("有効時色から無効時色を自動計算")),
+            TextButton(
+                onPressed: () {
+                  setState(() {
+                    _inactiveColor = Colors.white;
+                  });
+                },
+                child: const Text("無効時色は白")),
           ])),
       actions: [
         ElevatedButton(

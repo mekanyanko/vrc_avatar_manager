@@ -22,6 +22,8 @@ class TagButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = Color(tag.validColor);
     final inactiveColor = Color(tag.validInactiveColor);
+    final inactiveTextColor =
+        inactiveColor == Colors.white ? color : inactiveColor.textColor;
     return ElevatedButton(
         style: selected
             ? ElevatedButton.styleFrom(
@@ -32,7 +34,7 @@ class TagButton extends StatelessWidget {
                 shape: _shape)
             : ElevatedButton.styleFrom(
                 backgroundColor: inactiveColor,
-                foregroundColor: inactiveColor.textColor,
+                foregroundColor: inactiveTextColor,
                 padding: _padding,
                 minimumSize: _minimumSize,
                 shape: _shape),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
 import 'package:vrc_avatar_manager/db/tag_avatar.dart';
@@ -10,19 +11,24 @@ part 'tag.g.dart';
 
 @collection
 class Tag {
+  static const Color defaultColor =
+      Color(0xFF466D97); // Colors.blue seed theme primary value
+  static const Color defaultInactiveColor = Color(0xFFFFFFFF);
+
   Id id = Isar.autoIncrement;
 
   late String name;
 
-  int color = 0xFF0066FF;
+  int color = defaultColor.value;
 
   @ignore
-  int get validColor => color <= 0 ? 0xFF0066FF : color;
+  int get validColor => color <= 0 ? defaultColor.value : color;
 
-  int inactiveColor = 0xFFFFFFFF;
+  int inactiveColor = defaultInactiveColor.value;
 
   @ignore
-  int get validInactiveColor => inactiveColor <= 0 ? 0xFFFFFFFF : inactiveColor;
+  int get validInactiveColor =>
+      inactiveColor <= 0 ? defaultInactiveColor.value : inactiveColor;
 
   @enumerated
   late TagType type;
@@ -53,8 +59,8 @@ class Tag {
 
   void empty() {
     name = "";
-    color = 0xFF0066FF;
-    inactiveColor = 0xFFFFFFFF;
+    color = defaultColor.value;
+    inactiveColor = defaultInactiveColor.value;
     type = TagType.items;
     target = TagTarget.name;
     search = "";
