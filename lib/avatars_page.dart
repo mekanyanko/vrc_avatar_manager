@@ -449,7 +449,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                     child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Wrap(
-                          spacing: 8,
+                          spacing: 6,
                           children: _tags
                               .map((tag) => Column(children: [
                                     TagButton(
