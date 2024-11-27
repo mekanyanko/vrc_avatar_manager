@@ -29,6 +29,11 @@ jobs:
           cp C:\Windows\System32\vcruntime140.dll build\windows\x64\runner\Release\
           cp C:\Windows\System32\vcruntime140_1.dll build\windows\x64\runner\Release\
 
+      - name: make installer
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.5
+        with:
+          path: setup.iss
+
       - name: mv dist
         run: mv build\windows\x64\runner\Release\ vrc_avatar_manager-${{ github.ref_name }}
 
@@ -49,5 +54,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           files: |
+            Output/vrc_avatar_manager-${{ github.ref_name }}.0-installer.exe
             vrc_avatar_manager-${{ github.ref_name }}.zip
             build/windows/x64/runner/Release/vrc_avatar_manager.msix
