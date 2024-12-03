@@ -167,7 +167,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                   ? const Text("?")
                   : Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: [AvatarView(avatar: avatar)]),
+                      children: [AvatarView(avatar: avatar, detailed: true)]),
               actions: [
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(

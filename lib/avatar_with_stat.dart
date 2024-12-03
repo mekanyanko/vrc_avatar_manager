@@ -32,6 +32,7 @@ class AvatarWithStat {
 
   String get id => avatar.id;
   String get name => avatar.name;
+  String get desctipion => avatar.description;
   String get thumbnailImageUrl => avatar.thumbnailImageUrl;
   ReleaseStatus get releaseStatus => avatar.releaseStatus;
   DateTime get createdAt => avatar.createdAt;

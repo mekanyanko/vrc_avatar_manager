@@ -1,16 +1,24 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
 import 'package:vrc_avatar_manager/image_cache_manager.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 
+final dateFormat = DateFormat('y-MM-dd');
+
 class AvatarView extends StatelessWidget {
-  const AvatarView({super.key, required this.avatar, this.selected = false});
+  const AvatarView(
+      {super.key,
+      required this.avatar,
+      this.selected = false,
+      this.detailed = false});
 
   final AvatarWithStat avatar;
   final bool selected;
+  final bool detailed;
 
   static Image performanceIcon(PerformanceRatings p) {
     switch (p) {
@@ -33,7 +41,7 @@ class AvatarView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         width: 200,
-        height: 220,
+        height: detailed ? 260 : 220,
         color: selected ? Colors.green : null,
         child: Column(children: [
           SizedBox(
@@ -62,7 +70,14 @@ class AvatarView extends StatelessWidget {
               if (avatar.android.performanceRating != null)
                 performanceIcon(avatar.android.performanceRating!),
             ],
-          )
+          ),
+          if (detailed)
+            Text(avatar.desctipion,
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+          if (detailed)
+            Text("作成: ${dateFormat.format(avatar.createdAt.toLocal())}"),
+          if (detailed)
+            Text("更新: ${dateFormat.format(avatar.updatedAt.toLocal())}"),
         ]));
   }
 }
