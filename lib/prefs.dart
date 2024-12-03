@@ -3,6 +3,7 @@ import 'package:vrc_avatar_manager/sort_by.dart';
 
 const _tagDbVersion = "tagDbVersion";
 const _confirmWhenChangeAvatar = "confirmWhenChangeAvatar";
+const _selectSingleTag = "selectSingleTag";
 const _ascending = "ascending";
 const _sortBy = "sortBy";
 
@@ -31,6 +32,14 @@ class Prefs {
 
   Future<void> setConfirmWhenChangeAvatar(bool value) async {
     await _prefs.setBool(_confirmWhenChangeAvatar, value);
+  }
+
+  Future<bool> get selectSingleTag async {
+    return _prefs.getBool(_selectSingleTag) ?? false;
+  }
+
+  Future<void> setSelectSingleTag(bool value) async {
+    await _prefs.setBool(_selectSingleTag, value);
   }
 
   Future<bool> get ascending async {

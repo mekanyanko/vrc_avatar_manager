@@ -74,10 +74,12 @@ class _AvatarsPageState extends State<AvatarsPage> {
   void _restoreSettings() async {
     final prefs = await Prefs.instance;
     var confirmWhenChangeAvatar = await prefs.confirmWhenChangeAvatar;
+    var selectSingleTag = await prefs.selectSingleTag;
     var ascending = await prefs.ascending;
     var sortBy = await prefs.sortBy;
     setState(() {
       _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
+      _selectSingleTag = selectSingleTag;
       _ascending = ascending;
       _sortBy = sortBy;
       _sortAvatars();
@@ -447,10 +449,12 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                     foregroundColor:
                                         Theme.of(context).colorScheme.onPrimary)
                                 : null,
-                            onPressed: () {
+                            onPressed: () async {
                               setState(() {
                                 _selectSingleTag = !_selectSingleTag;
                               });
+                              final prefs = await Prefs.instance;
+                              await prefs.setSelectSingleTag(_selectSingleTag);
                             },
                             icon: const Icon(Icons.check_box)),
                       ],
