@@ -5,8 +5,11 @@ import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_target.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
+import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/tag_button.dart';
 import 'package:vrc_avatar_manager/text_color_for.dart';
+import 'package:vrc_avatar_manager/vrc_icons.dart';
+import 'package:vrchat_dart/vrchat_dart.dart';
 
 class TagEditDialog extends StatefulWidget {
   const TagEditDialog(
@@ -48,6 +51,11 @@ class _TagEditDialogState extends State<TagEditDialog> {
   final _searchController = TextEditingController();
   bool _invert = false;
   bool _caseSensitive = false;
+  bool _showRequirements = false;
+  bool _requirePc = false;
+  bool _requireAndroid = false;
+  Set<PerformanceRatings> _ignorePcPerformanceRatings = {};
+  Set<PerformanceRatings> _ignoreAndroidPerformanceRatings = {};
 
   @override
   void dispose() {
@@ -69,6 +77,12 @@ class _TagEditDialogState extends State<TagEditDialog> {
     _searchController.text = widget.tag.search;
     _invert = widget.tag.invert;
     _caseSensitive = widget.tag.caseSensitive;
+    _showRequirements = widget.tag.hasRequirements;
+    _requirePc = widget.tag.requirePc;
+    _requireAndroid = widget.tag.requireAndroid;
+    _ignorePcPerformanceRatings = widget.tag.ignorePcPerformanceRatings.toSet();
+    _ignoreAndroidPerformanceRatings =
+        widget.tag.ignoreAndroidPerformanceRatings.toSet();
   }
 
   @override
@@ -78,7 +92,8 @@ class _TagEditDialogState extends State<TagEditDialog> {
       content: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.always,
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
+          child: SingleChildScrollView(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(
@@ -142,7 +157,6 @@ class _TagEditDialogState extends State<TagEditDialog> {
                 decoration: const InputDecoration(
                   labelText: '検索文字列',
                 ),
-                validator: (value) => value!.isEmpty ? 'Required' : null,
               ),
             if (_type != TagType.items)
               CheckboxListTile(
@@ -163,6 +177,93 @@ class _TagEditDialogState extends State<TagEditDialog> {
                   });
                 },
                 title: const Text("大文字小文字を区別する"),
+              ),
+            const SizedBox(height: 8),
+            if (_type != TagType.items)
+              ExpansionTile(
+                title: const Text("必要パフォーマンス"),
+                initiallyExpanded: _showRequirements,
+                children: [
+                  ToggleButtons(
+                    isSelected: [
+                      _requirePc && !_requireAndroid,
+                      !_requirePc && _requireAndroid,
+                      _requirePc && _requireAndroid,
+                    ],
+                    onPressed: (int index) {
+                      setState(() {
+                        switch (index) {
+                          case 0:
+                            if (_requirePc && !_requireAndroid) {
+                              _requirePc = false;
+                            } else {
+                              _requirePc = true;
+                              _requireAndroid = false;
+                            }
+                            break;
+                          case 1:
+                            if (!_requirePc && _requireAndroid) {
+                              _requireAndroid = false;
+                            } else {
+                              _requirePc = false;
+                              _requireAndroid = true;
+                            }
+                            break;
+                          case 2:
+                            if (_requirePc && _requireAndroid) {
+                              _requirePc = false;
+                              _requireAndroid = false;
+                            } else {
+                              _requirePc = true;
+                              _requireAndroid = true;
+                            }
+                            break;
+                        }
+                      });
+                    },
+                    children: [
+                      VrcIcons.pc,
+                      VrcIcons.android,
+                      VrcIcons.crossPlatform,
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      VrcIcons.pc,
+                      PerformanceRankSelector(
+                          selected: PerformanceRatings.values
+                              .toSet()
+                              .difference(_ignorePcPerformanceRatings),
+                          onChanged: (p) {
+                            setState(() {
+                              _ignorePcPerformanceRatings.contains(p)
+                                  ? _ignorePcPerformanceRatings.remove(p)
+                                  : _ignorePcPerformanceRatings.add(p);
+                            });
+                          })
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      VrcIcons.android,
+                      PerformanceRankSelector(
+                          selected: PerformanceRatings.values
+                              .toSet()
+                              .difference(_ignoreAndroidPerformanceRatings),
+                          onChanged: (p) {
+                            setState(() {
+                              _ignoreAndroidPerformanceRatings.contains(p)
+                                  ? _ignoreAndroidPerformanceRatings.remove(p)
+                                  : _ignoreAndroidPerformanceRatings.add(p);
+                            });
+                          })
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
             const SizedBox(height: 8),
             Wrap(
@@ -217,7 +318,7 @@ class _TagEditDialogState extends State<TagEditDialog> {
                   });
                 },
                 child: const Text("無効時色は白")),
-          ])),
+          ]))),
       actions: [
         ElevatedButton(
           onPressed: () async {
@@ -234,7 +335,13 @@ class _TagEditDialogState extends State<TagEditDialog> {
               ..target = _target
               ..search = _searchController.text
               ..invert = _invert
-              ..caseSensitive = _caseSensitive;
+              ..caseSensitive = _caseSensitive
+              ..requirePc = _requirePc
+              ..requireAndroid = _requireAndroid
+              ..ignorePcPerformanceRatings =
+                  _ignorePcPerformanceRatings.toList()
+              ..ignoreAndroidPerformanceRatings =
+                  _ignoreAndroidPerformanceRatings.toList();
             await widget.tagsDb.put(widget.tag);
 
             Navigator.of(context).pop();

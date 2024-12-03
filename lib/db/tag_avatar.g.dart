@@ -28,7 +28,21 @@ const TagAvatarSchema = CollectionSchema(
   deserialize: _tagAvatarDeserialize,
   deserializeProp: _tagAvatarDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'avatarId': IndexSchema(
+      id: 5894256492777867883,
+      name: r'avatarId',
+      unique: true,
+      replace: true,
+      properties: [
+        IndexPropertySchema(
+          name: r'avatarId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    )
+  },
   links: {
     r'tags': LinkSchema(
       id: 971814925069048451,
@@ -100,6 +114,61 @@ List<IsarLinkBase<dynamic>> _tagAvatarGetLinks(TagAvatar object) {
 void _tagAvatarAttach(IsarCollection<dynamic> col, Id id, TagAvatar object) {
   object.id = id;
   object.tags.attach(col, col.isar.collection<Tag>(), r'tags', id);
+}
+
+extension TagAvatarByIndex on IsarCollection<TagAvatar> {
+  Future<TagAvatar?> getByAvatarId(String avatarId) {
+    return getByIndex(r'avatarId', [avatarId]);
+  }
+
+  TagAvatar? getByAvatarIdSync(String avatarId) {
+    return getByIndexSync(r'avatarId', [avatarId]);
+  }
+
+  Future<bool> deleteByAvatarId(String avatarId) {
+    return deleteByIndex(r'avatarId', [avatarId]);
+  }
+
+  bool deleteByAvatarIdSync(String avatarId) {
+    return deleteByIndexSync(r'avatarId', [avatarId]);
+  }
+
+  Future<List<TagAvatar?>> getAllByAvatarId(List<String> avatarIdValues) {
+    final values = avatarIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'avatarId', values);
+  }
+
+  List<TagAvatar?> getAllByAvatarIdSync(List<String> avatarIdValues) {
+    final values = avatarIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'avatarId', values);
+  }
+
+  Future<int> deleteAllByAvatarId(List<String> avatarIdValues) {
+    final values = avatarIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'avatarId', values);
+  }
+
+  int deleteAllByAvatarIdSync(List<String> avatarIdValues) {
+    final values = avatarIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'avatarId', values);
+  }
+
+  Future<Id> putByAvatarId(TagAvatar object) {
+    return putByIndex(r'avatarId', object);
+  }
+
+  Id putByAvatarIdSync(TagAvatar object, {bool saveLinks = true}) {
+    return putByIndexSync(r'avatarId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByAvatarId(List<TagAvatar> objects) {
+    return putAllByIndex(r'avatarId', objects);
+  }
+
+  List<Id> putAllByAvatarIdSync(List<TagAvatar> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'avatarId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension TagAvatarQueryWhereSort
@@ -175,6 +244,51 @@ extension TagAvatarQueryWhere
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<TagAvatar, TagAvatar, QAfterWhereClause> avatarIdEqualTo(
+      String avatarId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'avatarId',
+        value: [avatarId],
+      ));
+    });
+  }
+
+  QueryBuilder<TagAvatar, TagAvatar, QAfterWhereClause> avatarIdNotEqualTo(
+      String avatarId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'avatarId',
+              lower: [],
+              upper: [avatarId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'avatarId',
+              lower: [avatarId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'avatarId',
+              lower: [avatarId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'avatarId',
+              lower: [],
+              upper: [avatarId],
+              includeUpper: false,
+            ));
+      }
     });
   }
 }

@@ -6,6 +6,7 @@ import 'package:vrc_avatar_manager/db/tag_target.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:collection/collection.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
+import 'package:vrchat_dart/vrchat_dart.dart';
 
 part 'tag.g.dart';
 
@@ -20,6 +21,28 @@ class Tag {
   int order = 0;
 
   int groupId = 0;
+
+  bool requirePc = false;
+
+  bool requireAndroid = false;
+
+  @enumerated
+  List<PerformanceRatings> ignorePcPerformanceRatings = [];
+
+  @enumerated
+  List<PerformanceRatings> ignoreAndroidPerformanceRatings = [];
+
+  @ignore
+  bool get hasPlatformRequirements => requirePc || requireAndroid;
+
+  @ignore
+  bool get hasPerformanceRequirements =>
+      ignorePcPerformanceRatings.isNotEmpty ||
+      ignoreAndroidPerformanceRatings.isNotEmpty;
+
+  @ignore
+  bool get hasRequirements =>
+      hasPlatformRequirements || hasPerformanceRequirements;
 
   late String name;
 
@@ -89,15 +112,19 @@ class Tag {
         var ids = avatarIds;
         return avatars.where((avatar) => ids.contains(avatar.id));
       case TagType.simple:
+        final requirementsFilter = _genRequirementsFilter();
+        avatars = avatars.where(requirementsFilter);
         if (search.isEmpty) {
-          return [];
+          return avatars;
         }
         var pick = _genPick();
         var contains = _genSimpleFilter();
         return avatars.where((avatar) => contains(pick(avatar)));
       case TagType.regexp:
+        final requirementsFilter = _genRequirementsFilter();
+        avatars = avatars.where(requirementsFilter);
         if (search.isEmpty) {
-          return [];
+          return avatars;
         }
         var pick = _genPick();
         var contains = _genRegexpFilter();
@@ -129,5 +156,57 @@ class Tag {
     return invert
         ? (String s) => !regexp.hasMatch(s)
         : (String s) => regexp.hasMatch(s);
+  }
+
+  bool Function(AvatarWithStat) _genRequirementsFilter() {
+    if (!hasRequirements) {
+      return (AvatarWithStat avatar) => true;
+    }
+    var platformFilter = _genPlatformRequirementsFilter();
+    var performanceFilter = _genPerformanceRequirementsFilter();
+    if (platformFilter != null && performanceFilter != null) {
+      return (AvatarWithStat avatar) =>
+          platformFilter(avatar) && performanceFilter(avatar);
+    } else if (platformFilter != null) {
+      return platformFilter;
+    } else {
+      return performanceFilter!;
+    }
+  }
+
+  bool Function(AvatarWithStat)? _genPlatformRequirementsFilter() {
+    if (!hasPlatformRequirements) {
+      return null;
+    }
+    if (requirePc && requireAndroid) {
+      return (AvatarWithStat avatar) => avatar.hasCrossPlatform;
+    } else if (requirePc) {
+      return (AvatarWithStat avatar) => avatar.hasPc;
+    } else {
+      return (AvatarWithStat avatar) => avatar.hasAndroid;
+    }
+  }
+
+  bool Function(AvatarWithStat)? _genPerformanceRequirementsFilter() {
+    if (!hasPerformanceRequirements) {
+      return null;
+    }
+    var ignorePc = ignorePcPerformanceRatings.toSet();
+    var ignoreAndroid = ignoreAndroidPerformanceRatings.toSet();
+    if (ignorePc.isNotEmpty && ignoreAndroid.isNotEmpty) {
+      return (AvatarWithStat avatar) =>
+          (avatar.pc.performanceRating == null ||
+              !ignorePc.contains(avatar.pc.performanceRating)) &&
+          (avatar.android.performanceRating == null ||
+              !ignoreAndroid.contains(avatar.android.performanceRating));
+    } else if (ignorePc.isNotEmpty) {
+      return (AvatarWithStat avatar) =>
+          avatar.pc.performanceRating == null ||
+          !ignorePc.contains(avatar.pc.performanceRating);
+    } else {
+      return (AvatarWithStat avatar) =>
+          avatar.android.performanceRating == null ||
+          !ignoreAndroid.contains(avatar.android.performanceRating);
+    }
   }
 }
