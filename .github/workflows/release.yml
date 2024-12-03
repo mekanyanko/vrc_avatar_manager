@@ -21,6 +21,8 @@ jobs:
         with:
           flutter-version: 3.24.5
           cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:"
+          pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:"
       - run: flutter pub get
       - run: flutter build windows
       - name: copy files
