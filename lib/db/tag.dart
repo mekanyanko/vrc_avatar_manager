@@ -106,6 +106,23 @@ class Tag {
     await tagsDb.putLinked(this, tagAvatar);
   }
 
+  bool hasAllAvatars(Iterable<String> avatarIds) {
+    var existAvatarIds = tagAvatars.map((ta) => ta.avatarId).toSet();
+    return existAvatarIds.containsAll(avatarIds);
+  }
+
+  Future<void> addAvatars(Iterable<String> avatarIds, TagsDb tagsDb) async {
+    var targetTagAvatars = await tagsDb.findOrCreateTagAvatars(avatarIds);
+    tagAvatars.addAll(targetTagAvatars);
+    await tagsDb.putLinkedAll(this, targetTagAvatars);
+  }
+
+  Future<void> removeAvatars(Iterable<String> avatarIds, TagsDb tagsDb) async {
+    var targetTagAvatars = await tagsDb.findTagAvatars(avatarIds);
+    tagAvatars.removeAll(targetTagAvatars);
+    await tagsDb.putLinkedAll(this, targetTagAvatars);
+  }
+
   Iterable<AvatarWithStat> filterAvatars(Iterable<AvatarWithStat> avatars) {
     switch (type) {
       case TagType.items:

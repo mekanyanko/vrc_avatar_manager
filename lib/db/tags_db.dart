@@ -74,9 +74,35 @@ class TagsDb {
       ..avatarId = avatarId;
   }
 
+  Future<List<TagAvatar>> findTagAvatars(Iterable<String> avatarIds) {
+    return isar.tagAvatars
+        .where()
+        .filter()
+        .anyOf(avatarIds, (q, avatarId) => q.avatarIdEqualTo(avatarId))
+        .findAll();
+  }
+
+  Future<List<TagAvatar>> findOrCreateTagAvatars(
+      Iterable<String> avatarIds) async {
+    final tagAvatars = await findTagAvatars(avatarIds);
+    final missingAvatarIds = avatarIds.toSet()
+      ..removeAll(tagAvatars.map((ta) => ta.avatarId));
+    final missingTagAvatars = missingAvatarIds
+        .map((avatarId) => TagAvatar()..avatarId = avatarId)
+        .toList();
+    return [...tagAvatars, ...missingTagAvatars];
+  }
+
   Future<void> putLinked(Tag tag, TagAvatar tagAvatar) async {
     await isar.writeTxn(() async {
       await isar.tagAvatars.put(tagAvatar);
+      await tag.tagAvatars.save();
+    });
+  }
+
+  Future<void> putLinkedAll(Tag tag, List<TagAvatar> tagAvatars) async {
+    await isar.writeTxn(() async {
+      await isar.tagAvatars.putAll(tagAvatars);
       await tag.tagAvatars.save();
     });
   }
