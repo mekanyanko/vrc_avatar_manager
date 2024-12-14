@@ -39,20 +39,25 @@ class _AccountViewState extends State<AccountView> {
         ))
       else
         TextButton(onPressed: widget.onLogin, child: Text(widget.account.name)),
-      IconButton(
-        onPressed: () => setState(() {
-          _editName = !_editName;
-          if (_editName) {
-            _nameController.text = widget.account.name;
-          } else {
-            widget.onChangeName(_nameController.text);
-          }
-        }),
-        icon: const Icon(Icons.edit),
-      ),
+      Tooltip(
+          message: "名前を編集",
+          child: IconButton(
+            onPressed: () => setState(() {
+              _editName = !_editName;
+              if (_editName) {
+                _nameController.text = widget.account.name;
+              } else {
+                widget.onChangeName(_nameController.text);
+              }
+            }),
+            icon: const Icon(Icons.edit),
+          )),
       const Spacer(),
       ElevatedButton(onPressed: widget.onLogout, child: const Text("Logout")),
-      IconButton(onPressed: widget.onDelete, icon: const Icon(Icons.delete)),
+      Tooltip(
+          message: "アカウント設定を削除",
+          child: IconButton(
+              onPressed: widget.onDelete, icon: const Icon(Icons.delete))),
     ]);
   }
 }

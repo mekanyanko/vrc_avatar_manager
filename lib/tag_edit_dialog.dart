@@ -222,9 +222,12 @@ class _TagEditDialogState extends State<TagEditDialog> {
                       });
                     },
                     children: [
-                      VrcIcons.pc,
-                      VrcIcons.android,
-                      VrcIcons.crossPlatform,
+                      Tooltip(message: "PC対応アバターを表示", child: VrcIcons.pc),
+                      Tooltip(
+                          message: "Android対応アバターを表示", child: VrcIcons.android),
+                      Tooltip(
+                          message: "PC/Android両対応アバターを表示",
+                          child: VrcIcons.crossPlatform),
                     ],
                   ),
                   const SizedBox(height: 8),

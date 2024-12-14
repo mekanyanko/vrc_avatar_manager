@@ -362,43 +362,49 @@ class _AvatarsPageState extends State<AvatarsPage> {
                 actions: [
                   SizedBox(
                       width: 200,
-                      child: CheckboxListTile(
-                          title: const Text('アバター変更確認'),
-                          value: _confirmWhenChangeAvatar,
-                          onChanged: _setConfirmWhenChangeAvatar)),
-                  DropdownButton<SortBy>(
-                    value: _sortBy,
-                    onChanged: (SortBy? value) async {
-                      setState(() {
-                        _sortBy = value!;
-                        _sortAvatars();
-                      });
-                      final prefs = await Prefs.instance;
-                      await prefs.setSortBy(_sortBy);
-                    },
-                    items: SortBy.values
-                        .map((sortBy) => DropdownMenuItem(
-                              value: sortBy,
-                              child: Text(switch (sortBy) {
-                                SortBy.createdAt => "Created At",
-                                SortBy.updatedAt => "Updated At",
-                                SortBy.name => "Name",
-                              }),
-                            ))
-                        .toList(),
-                  ),
-                  IconButton(
-                      onPressed: () async {
-                        setState(() {
-                          _ascending = !_ascending;
-                          _sortAvatars();
-                        });
-                        final prefs = await Prefs.instance;
-                        await prefs.setAscending(_ascending);
-                      },
-                      icon: Icon(_ascending
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward)),
+                      child: Tooltip(
+                          message: "アバターをクリックしたときに確認ダイアログを出します",
+                          child: CheckboxListTile(
+                              title: const Text('アバター変更確認'),
+                              value: _confirmWhenChangeAvatar,
+                              onChanged: _setConfirmWhenChangeAvatar))),
+                  Tooltip(
+                      message: "並び替え",
+                      child: DropdownButton<SortBy>(
+                        value: _sortBy,
+                        onChanged: (SortBy? value) async {
+                          setState(() {
+                            _sortBy = value!;
+                            _sortAvatars();
+                          });
+                          final prefs = await Prefs.instance;
+                          await prefs.setSortBy(_sortBy);
+                        },
+                        items: SortBy.values
+                            .map((sortBy) => DropdownMenuItem(
+                                  value: sortBy,
+                                  child: Text(switch (sortBy) {
+                                    SortBy.createdAt => "Created At",
+                                    SortBy.updatedAt => "Updated At",
+                                    SortBy.name => "Name",
+                                  }),
+                                ))
+                            .toList(),
+                      )),
+                  Tooltip(
+                      message: _ascending ? "昇順" : "降順",
+                      child: IconButton(
+                          onPressed: () async {
+                            setState(() {
+                              _ascending = !_ascending;
+                              _sortAvatars();
+                            });
+                            final prefs = await Prefs.instance;
+                            await prefs.setAscending(_ascending);
+                          },
+                          icon: Icon(_ascending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward))),
                   VrcIcons.pc,
                   PerformanceRankSelector(
                       selected: PerformanceRatings.values
@@ -444,9 +450,12 @@ class _AvatarsPageState extends State<AvatarsPage> {
                       });
                     },
                     children: [
-                      VrcIcons.pc,
-                      VrcIcons.android,
-                      VrcIcons.crossPlatform,
+                      Tooltip(message: "PC対応アバターを表示", child: VrcIcons.pc),
+                      Tooltip(
+                          message: "Android対応アバターを表示", child: VrcIcons.android),
+                      Tooltip(
+                          message: "PC/Android両対応アバターを表示",
+                          child: VrcIcons.crossPlatform),
                     ],
                   ),
                   const SizedBox(width: 8),
@@ -463,12 +472,14 @@ class _AvatarsPageState extends State<AvatarsPage> {
                         }),
                       )),
                   const SizedBox(width: 8),
-                  IconButton(
-                    iconSize: 36,
-                    icon: const Icon(Icons.refresh),
-                    onPressed: _loadAvatars,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                  Tooltip(
+                      message: "アバター一覧を再読込",
+                      child: IconButton(
+                        iconSize: 36,
+                        icon: const Icon(Icons.refresh),
+                        onPressed: _loadAvatars,
+                        color: Theme.of(context).colorScheme.primary,
+                      )),
                 ],
                 bottom: PreferredSize(
                     preferredSize: const Size.fromHeight(50),
@@ -478,66 +489,81 @@ class _AvatarsPageState extends State<AvatarsPage> {
                             width: 200,
                             child: Row(
                               children: [
-                                IconButton(
-                                    onPressed: () {
-                                      if (!_tagsDbLoaded) {
-                                        return;
-                                      }
-                                      TagEditDialog.show(context,
-                                          Tag()..empty(), true, _tagsDb);
-                                    },
-                                    icon: const Icon(Icons.add)),
-                                IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _editTagAvatars = !_editTagAvatars;
-                                        if (_editTagAvatars) {
-                                          _editTags = false;
-                                        } else {
-                                          _editTagAvatarTag = null;
-                                        }
-                                      });
-                                    },
-                                    icon: const Icon(Icons.edit)),
-                                IconButton(
-                                    onPressed: () async {
-                                      final tags = await OrderDialog.show(
-                                          context, _tags, (tag) => tag.name);
-                                      if (tags != null) {
-                                        await _tagsDb.reorder(tags);
-                                      }
-                                    },
-                                    icon: const Icon(Icons.swap_vert)),
-                                IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _editTags = !_editTags;
-                                        if (_editTags) {
-                                          _editTagAvatars = false;
-                                          _editTagAvatarTag = null;
-                                        }
-                                      });
-                                    },
-                                    icon: const Icon(Icons.settings)),
-                                IconButton(
-                                    style: _selectSingleTag
-                                        ? IconButton.styleFrom(
-                                            backgroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                            foregroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary)
-                                        : null,
-                                    onPressed: () async {
-                                      setState(() {
-                                        _selectSingleTag = !_selectSingleTag;
-                                      });
-                                      final prefs = await Prefs.instance;
-                                      await prefs
-                                          .setSelectSingleTag(_selectSingleTag);
-                                    },
-                                    icon: const Icon(Icons.check_box)),
+                                Tooltip(
+                                    message: "タグを新規作成",
+                                    child: IconButton(
+                                        onPressed: () {
+                                          if (!_tagsDbLoaded) {
+                                            return;
+                                          }
+                                          TagEditDialog.show(context,
+                                              Tag()..empty(), true, _tagsDb);
+                                        },
+                                        icon: const Icon(Icons.add))),
+                                Tooltip(
+                                    message: "タグ（タイプ: リスト）に含まれるアバターリストを編集",
+                                    child: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _editTagAvatars = !_editTagAvatars;
+                                            if (_editTagAvatars) {
+                                              _editTags = false;
+                                            } else {
+                                              _editTagAvatarTag = null;
+                                            }
+                                          });
+                                        },
+                                        icon: const Icon(Icons.edit))),
+                                Tooltip(
+                                    message: "タグを並べ替え",
+                                    child: IconButton(
+                                        onPressed: () async {
+                                          final tags = await OrderDialog.show(
+                                              context,
+                                              _tags,
+                                              (tag) => tag.name);
+                                          if (tags != null) {
+                                            await _tagsDb.reorder(tags);
+                                          }
+                                        },
+                                        icon: const Icon(Icons.swap_vert))),
+                                Tooltip(
+                                    message: "タグの設定を変更",
+                                    child: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _editTags = !_editTags;
+                                            if (_editTags) {
+                                              _editTagAvatars = false;
+                                              _editTagAvatarTag = null;
+                                            }
+                                          });
+                                        },
+                                        icon: const Icon(Icons.settings))),
+                                Tooltip(
+                                    message: "択一選択モード（同一タググループのタグを1つだけ選択するモード）",
+                                    child: IconButton(
+                                        style: _selectSingleTag
+                                            ? IconButton.styleFrom(
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                foregroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimary)
+                                            : null,
+                                        onPressed: () async {
+                                          setState(() {
+                                            _selectSingleTag =
+                                                !_selectSingleTag;
+                                          });
+                                          final prefs = await Prefs.instance;
+                                          await prefs.setSelectSingleTag(
+                                              _selectSingleTag);
+                                        },
+                                        icon: const Icon(Icons.check_box))),
                               ],
                             )),
                         SizedBox(

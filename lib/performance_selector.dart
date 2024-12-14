@@ -17,19 +17,21 @@ class PerformanceRankSelector extends StatelessWidget {
             .map((p) {
       return Opacity(
         opacity: selected.contains(p) ? 1 : 0.5,
-        child: SmallIconButton(
-          onPressed: () {
-            onChanged(p);
-          },
-          icon: switch (p) {
-            PerformanceRatings.excellent => VrcIcons.excellent,
-            PerformanceRatings.good => VrcIcons.good,
-            PerformanceRatings.medium => VrcIcons.medium,
-            PerformanceRatings.poor => VrcIcons.poor,
-            PerformanceRatings.veryPoor => VrcIcons.verypoor,
-            _ => VrcIcons.none,
-          },
-        ),
+        child: Tooltip(
+            message: p.value,
+            child: SmallIconButton(
+              onPressed: () {
+                onChanged(p);
+              },
+              icon: switch (p) {
+                PerformanceRatings.excellent => VrcIcons.excellent,
+                PerformanceRatings.good => VrcIcons.good,
+                PerformanceRatings.medium => VrcIcons.medium,
+                PerformanceRatings.poor => VrcIcons.poor,
+                PerformanceRatings.veryPoor => VrcIcons.verypoor,
+                _ => VrcIcons.none,
+              },
+            )),
       );
     }).toList());
   }
