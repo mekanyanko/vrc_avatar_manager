@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vrc_avatar_manager/app_dir.dart';
 import 'package:vrc_avatar_manager/avatars_page.dart';
+import 'package:vrc_avatar_manager/custom_scroll_behaviour.dart';
 import 'package:vrc_avatar_manager/global_window_listener.dart';
 import 'package:vrc_avatar_manager/home_page.dart';
 import 'package:vrc_avatar_manager/accounts_page.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
+      scrollBehavior: CustomScrollBehavior(),
       initialRoute: "/",
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => const HomePage(),
