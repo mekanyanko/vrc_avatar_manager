@@ -12,6 +12,7 @@ import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_button.dart';
+import 'package:vrc_avatar_manager/tag_companion_button.dart';
 import 'package:vrc_avatar_manager/tag_edit_dialog.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
@@ -167,6 +168,20 @@ class _AvatarsPageState extends State<AvatarsPage> {
       if (_editTagAvatarTag != null) {
         _editTagAvatarTag =
             tags.firstWhereOrNull((tag) => tag.id == _editTagAvatarTag!.id);
+      }
+    });
+  }
+
+  void _toggleTag(Tag tag) {
+    setState(() {
+      if (_selectedTagIds.contains(tag.id)) {
+        _selectedTagIds.remove(tag.id);
+      } else {
+        if (_selectSingleTag) {
+          _selectedTagIds.removeAll(
+              _tags.where((t) => t.groupId == tag.groupId).map((t) => t.id));
+        }
+        _selectedTagIds.add(tag.id);
       }
     });
   }
@@ -579,31 +594,10 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                                 selected: _selectedTagIds
                                                     .contains(tag.id),
                                                 onPressed: () {
-                                                  setState(() {
-                                                    if (_selectedTagIds
-                                                        .contains(tag.id)) {
-                                                      _selectedTagIds
-                                                          .remove(tag.id);
-                                                    } else {
-                                                      if (_selectSingleTag) {
-                                                        _selectedTagIds
-                                                            .removeAll(_tags
-                                                                .where((t) =>
-                                                                    t.groupId ==
-                                                                    tag.groupId)
-                                                                .map((t) =>
-                                                                    t.id));
-                                                      }
-                                                      _selectedTagIds
-                                                          .add(tag.id);
-                                                    }
-                                                  });
+                                                  _toggleTag(tag);
                                                 }),
                                             if (_editTags)
-                                              IconButton(
-                                                constraints:
-                                                    const BoxConstraints(),
-                                                iconSize: 16,
+                                              TagCompanionButton(
                                                 onPressed: () {
                                                   TagEditDialog.show(context,
                                                       tag, false, _tagsDb);
@@ -613,10 +607,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                               ),
                                             if (_editTagAvatars &&
                                                 tag.type == TagType.items)
-                                              IconButton(
-                                                constraints:
-                                                    const BoxConstraints(),
-                                                iconSize: 16,
+                                              TagCompanionButton(
                                                 onPressed: () {
                                                   setState(() {
                                                     if (_editTagAvatarTag ==
@@ -628,14 +619,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                                   });
                                                 },
                                                 icon: const Icon(Icons.edit),
-                                                style: _editTagAvatarTag == tag
-                                                    ? IconButton.styleFrom(
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                        foregroundColor:
-                                                            Colors.white,
-                                                      )
-                                                    : null,
+                                                selected:
+                                                    _editTagAvatarTag == tag,
                                               ),
                                           ]))
                                       .toList(),
