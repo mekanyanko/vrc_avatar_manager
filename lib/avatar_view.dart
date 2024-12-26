@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
 import 'package:vrc_avatar_manager/image_cache_manager.dart';
@@ -41,7 +43,7 @@ class AvatarView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         width: 200,
-        height: detailed ? 320 : 220,
+        height: detailed ? 290 : 220,
         color: selected ? Colors.green : null,
         child: Column(children: [
           SizedBox(
@@ -79,10 +81,22 @@ class AvatarView extends StatelessWidget {
           if (detailed)
             Text("更新: ${dateFormat.format(avatar.updatedAt.toLocal())}"),
           if (detailed)
-            TextField(
-              controller: TextEditingController(text: avatar.id),
-              style: const TextStyle(fontSize: 10),
-              readOnly: true,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(
+                          text: JsonEncoder.withIndent("  ")
+                              .convert(avatar.avatar.toJson())));
+                    },
+                    child: const Text("Copy JSON")),
+                TextButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: avatar.id));
+                    },
+                    child: const Text("Copy ID"))
+              ],
             ),
         ]));
   }

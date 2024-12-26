@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -300,6 +301,38 @@ class _AvatarsPageState extends State<AvatarsPage> {
     await prefs.setConfirmWhenChangeAvatar(_confirmWhenChangeAvatar);
   }
 
+  void _showJson() async {
+    await showDialog(
+        context: context,
+        builder: (context) {
+          final json = JsonEncoder.withIndent("  ")
+              .convert(_filteredAvatars.map((a) => a.avatar).toList());
+          final controller = TextEditingController(text: json);
+          return AlertDialog(
+            title: const Text("JSON"),
+            content: TextField(
+              controller: controller,
+              maxLines: 20,
+              readOnly: true,
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: json));
+                },
+                child: const Text("Copy"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Close"),
+              ),
+            ],
+          );
+        });
+  }
+
   void _showInfo(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -371,9 +404,13 @@ class _AvatarsPageState extends State<AvatarsPage> {
                 title: _avatars.length != _newAvatars.length
                     ? Text(
                         "${filteredAvatars.length} avatars (fetching ${_newAvatars.length} avatars)")
-                    : Text(
-                        '${filteredAvatars.length} avatars',
-                      ),
+                    : GestureDetector(
+                        onTap: _showJson,
+                        child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: Text(
+                              '${filteredAvatars.length} avatars',
+                            ))),
                 actions: [
                   SizedBox(
                       width: 200,
