@@ -41,7 +41,7 @@ class AvatarView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         width: 200,
-        height: detailed ? 260 : 220,
+        height: detailed ? 320 : 220,
         color: selected ? Colors.green : null,
         child: Column(children: [
           SizedBox(
@@ -78,6 +78,12 @@ class AvatarView extends StatelessWidget {
             Text("作成: ${dateFormat.format(avatar.createdAt.toLocal())}"),
           if (detailed)
             Text("更新: ${dateFormat.format(avatar.updatedAt.toLocal())}"),
+          if (detailed)
+            TextField(
+              controller: TextEditingController(text: avatar.id),
+              style: const TextStyle(fontSize: 10),
+              readOnly: true,
+            ),
         ]));
   }
 }
