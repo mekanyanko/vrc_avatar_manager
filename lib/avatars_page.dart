@@ -480,7 +480,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
   @override
   Widget build(BuildContext context) {
     var filteredAvatars = _filteredAvatars.toList();
-    print(_searchFocused);
     return CallbackShortcuts(
         bindings: _searchFocused
             ? {}
