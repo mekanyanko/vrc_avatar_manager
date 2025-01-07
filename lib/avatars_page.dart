@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:vrc_avatar_manager/avatar_view.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
 import 'package:vrc_avatar_manager/clickable_view.dart';
+import 'package:vrc_avatar_manager/custom_scroll_behaviour.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
@@ -620,48 +621,57 @@ class _AvatarsPageState extends State<AvatarsPage> {
                             )),
                         SizedBox(
                             width: MediaQuery.of(context).size.width - 200,
-                            child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Wrap(
-                                  spacing: 6,
-                                  children: _tags
-                                      .map((tag) => Column(children: [
-                                            TagButton(
-                                                tag: tag,
-                                                selected: _selectedTagIds
-                                                    .contains(tag.id),
-                                                onPressed: () {
-                                                  _toggleTag(tag);
-                                                }),
-                                            if (_editTags)
-                                              TagCompanionButton(
-                                                onPressed: () {
-                                                  TagEditDialog.show(context,
-                                                      tag, false, _tagsDb);
-                                                },
-                                                icon:
-                                                    const Icon(Icons.settings),
-                                              ),
-                                            if (_editTagAvatars &&
-                                                tag.type == TagType.items)
-                                              TagCompanionButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    if (_editTagAvatarTag ==
-                                                        tag) {
-                                                      _editTagAvatarTag = null;
-                                                    } else {
-                                                      _editTagAvatarTag = tag;
-                                                    }
-                                                  });
-                                                },
-                                                icon: const Icon(Icons.edit),
-                                                selected:
-                                                    _editTagAvatarTag == tag,
-                                              ),
-                                          ]))
-                                      .toList(),
-                                )))
+                            child: ScrollConfiguration(
+                                behavior: CustomScrollBehavior(),
+                                child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Wrap(
+                                      spacing: 6,
+                                      children: _tags
+                                          .map((tag) => Column(children: [
+                                                TagButton(
+                                                    tag: tag,
+                                                    selected: _selectedTagIds
+                                                        .contains(tag.id),
+                                                    onPressed: () {
+                                                      _toggleTag(tag);
+                                                    }),
+                                                if (_editTags)
+                                                  TagCompanionButton(
+                                                    onPressed: () {
+                                                      TagEditDialog.show(
+                                                          context,
+                                                          tag,
+                                                          false,
+                                                          _tagsDb);
+                                                    },
+                                                    icon: const Icon(
+                                                        Icons.settings),
+                                                  ),
+                                                if (_editTagAvatars &&
+                                                    tag.type == TagType.items)
+                                                  TagCompanionButton(
+                                                    onPressed: () {
+                                                      setState(() {
+                                                        if (_editTagAvatarTag ==
+                                                            tag) {
+                                                          _editTagAvatarTag =
+                                                              null;
+                                                        } else {
+                                                          _editTagAvatarTag =
+                                                              tag;
+                                                        }
+                                                      });
+                                                    },
+                                                    icon:
+                                                        const Icon(Icons.edit),
+                                                    selected:
+                                                        _editTagAvatarTag ==
+                                                            tag,
+                                                  ),
+                                              ]))
+                                          .toList(),
+                                    ))))
                       ],
                     )),
               ),
