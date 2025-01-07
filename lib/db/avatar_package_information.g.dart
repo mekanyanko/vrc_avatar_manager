@@ -27,6 +27,11 @@ const AvatarPackageInformationSchema = CollectionSchema(
       id: 1,
       name: r'unityPackageId',
       type: IsarType.string,
+    ),
+    r'version': PropertySchema(
+      id: 2,
+      name: r'version',
+      type: IsarType.long,
     )
   },
   estimateSize: _avatarPackageInformationEstimateSize,
@@ -75,6 +80,7 @@ void _avatarPackageInformationSerialize(
 ) {
   writer.writeLong(offsets[0], object.size);
   writer.writeString(offsets[1], object.unityPackageId);
+  writer.writeLong(offsets[2], object.version);
 }
 
 AvatarPackageInformation _avatarPackageInformationDeserialize(
@@ -87,6 +93,7 @@ AvatarPackageInformation _avatarPackageInformationDeserialize(
   object.id = id;
   object.size = reader.readLong(offsets[0]);
   object.unityPackageId = reader.readString(offsets[1]);
+  object.version = reader.readLong(offsets[2]);
   return object;
 }
 
@@ -101,6 +108,8 @@ P _avatarPackageInformationDeserializeProp<P>(
       return (reader.readLong(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -557,6 +566,62 @@ extension AvatarPackageInformationQueryFilter on QueryBuilder<
       ));
     });
   }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation,
+      QAfterFilterCondition> versionEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'version',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation,
+      QAfterFilterCondition> versionGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'version',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation,
+      QAfterFilterCondition> versionLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'version',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation,
+      QAfterFilterCondition> versionBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'version',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension AvatarPackageInformationQueryObject on QueryBuilder<
@@ -592,6 +657,20 @@ extension AvatarPackageInformationQuerySortBy on QueryBuilder<
       sortByUnityPackageIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'unityPackageId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation, QAfterSortBy>
+      sortByVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'version', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation, QAfterSortBy>
+      sortByVersionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'version', Sort.desc);
     });
   }
 }
@@ -639,6 +718,20 @@ extension AvatarPackageInformationQuerySortThenBy on QueryBuilder<
       return query.addSortBy(r'unityPackageId', Sort.desc);
     });
   }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation, QAfterSortBy>
+      thenByVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'version', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation, QAfterSortBy>
+      thenByVersionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'version', Sort.desc);
+    });
+  }
 }
 
 extension AvatarPackageInformationQueryWhereDistinct on QueryBuilder<
@@ -655,6 +748,13 @@ extension AvatarPackageInformationQueryWhereDistinct on QueryBuilder<
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'unityPackageId',
           caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, AvatarPackageInformation, QDistinct>
+      distinctByVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'version');
     });
   }
 }
@@ -677,6 +777,13 @@ extension AvatarPackageInformationQueryProperty on QueryBuilder<
       unityPackageIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'unityPackageId');
+    });
+  }
+
+  QueryBuilder<AvatarPackageInformation, int, QQueryOperations>
+      versionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'version');
     });
   }
 }

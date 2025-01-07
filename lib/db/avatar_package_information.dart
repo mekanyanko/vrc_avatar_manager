@@ -8,5 +8,6 @@ class AvatarPackageInformation {
 
   @Index(unique: true, replace: true)
   late String unityPackageId;
+  late int version;
   late int size;
 }

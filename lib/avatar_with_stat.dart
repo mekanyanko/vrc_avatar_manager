@@ -37,6 +37,7 @@ class AvatarWithStat {
   ReleaseStatus get releaseStatus => avatar.releaseStatus;
   DateTime get createdAt => avatar.createdAt;
   DateTime get updatedAt => avatar.updatedAt;
+  int get version => avatar.version;
 
   bool hasUnityPackageIdInMain(Iterable<String> ids) =>
       pc.hasMain && ids.contains(pc.main!.id) ||

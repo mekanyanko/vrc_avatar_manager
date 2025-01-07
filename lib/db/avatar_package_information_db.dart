@@ -22,18 +22,23 @@ class AvatarPackageInformationDb {
     return isar.avatarPackageInformations.where().findAll();
   }
 
-  Future<List<AvatarPackageInformation>> getAllByUnitypackageIds(
-      Iterable<String> ids) async {
+  Future<List<AvatarPackageInformation>> getAllByUnitypackageIdVersions(
+      Iterable<(String, int)> idVersions) async {
     return isar.avatarPackageInformations
         .where()
         .filter()
-        .anyOf(ids, (q, id) => q.unityPackageIdEqualTo(id))
+        .anyOf(
+            idVersions,
+            (q, idVersion) => q
+                .unityPackageIdEqualTo(idVersion.$1)
+                .and()
+                .versionEqualTo(idVersion.$2))
         .findAll();
   }
 
   Future<void> put(AvatarPackageInformation account) async {
     await isar.writeTxn(() async {
-      await isar.avatarPackageInformations.put(account);
+      await isar.avatarPackageInformations.putByUnityPackageId(account);
     });
   }
 

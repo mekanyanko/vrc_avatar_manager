@@ -53,7 +53,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
 
   List<AvatarWithStat> _sortedAvatars = [];
 
-  final Map<String, AvatarPackageInformation> _avatarPackageInformations = {};
+  final Map<(String, int), AvatarPackageInformation>
+      _avatarPackageInformations = {};
 
   bool _confirmWhenChangeAvatar = false;
   bool _ascending = false;
@@ -138,24 +139,40 @@ class _AvatarsPageState extends State<AvatarsPage> {
           comparator(a.updatedAt, b.updatedAt)),
       SortBy.pcSize => _avatars.sorted((a, b) =>
           comparator<num>(
-                  (_avatarPackageInformations[a.pc.main?.id]?.size ?? 0),
-                  (_avatarPackageInformations[b.pc.main?.id]?.size ?? 0)) *
+                  (_avatarPackageInformations[(a.pc.main?.id, a.version)]
+                          ?.size ??
+                      0),
+                  (_avatarPackageInformations[(b.pc.main?.id, b.version)]
+                          ?.size ??
+                      0)) *
               10000 +
           comparator<num>(
-                  (_avatarPackageInformations[a.android.main?.id]?.size ?? 0),
-                  (_avatarPackageInformations[b.android.main?.id]?.size ?? 0)) *
+                  (_avatarPackageInformations[(a.android.main?.id, a.version)]
+                          ?.size ??
+                      0),
+                  (_avatarPackageInformations[(b.android.main?.id, b.version)]
+                          ?.size ??
+                      0)) *
               1000 +
           comparator(a.name, b.name) * 100 +
           comparator(a.createdAt, b.createdAt) * 10 +
           comparator(a.updatedAt, b.updatedAt)),
       SortBy.androidSize => _avatars.sorted((a, b) =>
           comparator<num>(
-                  (_avatarPackageInformations[a.android.main?.id]?.size ?? 0),
-                  (_avatarPackageInformations[b.android.main?.id]?.size ?? 0)) *
+                  (_avatarPackageInformations[(a.android.main?.id, a.version)]
+                          ?.size ??
+                      0),
+                  (_avatarPackageInformations[(b.android.main?.id, b.version)]
+                          ?.size ??
+                      0)) *
               10000 +
           comparator<num>(
-                  (_avatarPackageInformations[a.pc.main?.id]?.size ?? 0),
-                  (_avatarPackageInformations[b.pc.main?.id]?.size ?? 0)) *
+                  (_avatarPackageInformations[(a.pc.main?.id, a.version)]
+                          ?.size ??
+                      0),
+                  (_avatarPackageInformations[(b.pc.main?.id, b.version)]
+                          ?.size ??
+                      0)) *
               1000 +
           comparator(a.name, b.name) * 100 +
           comparator(a.createdAt, b.createdAt) * 10 +
@@ -178,18 +195,19 @@ class _AvatarsPageState extends State<AvatarsPage> {
         var avatarStats =
             avatars.map((avatar) => AvatarWithStat(avatar)).toList();
         _newAvatars.addAll(avatarStats);
-        final aps = await _avatarPackageInformationDb.getAllByUnitypackageIds({
+        final aps =
+            await _avatarPackageInformationDb.getAllByUnitypackageIdVersions({
           ...avatarStats
               .where((avatar) => avatar.hasPc)
-              .map((avatar) => avatar.pc.main!.id),
+              .map((avatar) => (avatar.pc.main!.id, avatar.version)),
           ...avatarStats
               .where((avatar) => avatar.hasAndroid)
-              .map((avatar) => avatar.android.main!.id),
+              .map((avatar) => (avatar.android.main!.id, avatar.version)),
         });
         setState(() {
           _avatars.addAll(avatarStats);
-          _avatarPackageInformations
-              .addEntries(aps.map((ap) => MapEntry(ap.unityPackageId, ap)));
+          _avatarPackageInformations.addEntries(
+              aps.map((ap) => MapEntry((ap.unityPackageId, ap.version), ap)));
           _sortAvatars();
         });
       }
@@ -300,10 +318,15 @@ class _AvatarsPageState extends State<AvatarsPage> {
                       AvatarView(
                         avatar: avatar,
                         detailed: true,
-                        pcAvatarPackageInformation:
-                            _avatarPackageInformations[avatar.pc.main?.id],
+                        pcAvatarPackageInformation: _avatarPackageInformations[(
+                          avatar.pc.main?.id,
+                          avatar.version
+                        )],
                         androidAvatarPackageInformation:
-                            _avatarPackageInformations[avatar.android.main?.id],
+                            _avatarPackageInformations[(
+                          avatar.android.main?.id,
+                          avatar.version
+                        )],
                       )
                     ]),
               actions: [
@@ -394,18 +417,21 @@ class _AvatarsPageState extends State<AvatarsPage> {
     if (!await prefs.fetchAvatarSize || !_avatarPackageInformationDbLoaded) {
       return;
     }
-    final targetUnityPackageIds = {
+    final targetUnityPackageIdVersions = {
       ..._avatars
           .where((avatar) => avatar.hasPc)
-          .map((avatar) => avatar.pc.main!.id),
+          .map((avatar) => (avatar.pc.main!.id, avatar.version)),
       ..._avatars
           .where((avatar) => avatar.hasAndroid)
-          .map((avatar) => avatar.android.main!.id),
+          .map((avatar) => (avatar.android.main!.id, avatar.version)),
     };
-    targetUnityPackageIds.removeAll(_avatarPackageInformations.keys);
-    if (targetUnityPackageIds.isEmpty) {
+    targetUnityPackageIdVersions.removeAll(_avatarPackageInformations.keys);
+    if (targetUnityPackageIdVersions.isEmpty) {
       return;
     }
+    final targetUnityPackageIds = {
+      ...targetUnityPackageIdVersions.map((e) => e.$1)
+    };
 
     var targetAvatar = _filteredAvatars.firstWhereOrNull((avatar) =>
             avatar.hasUnityPackageIdInMain(targetUnityPackageIds)) ??
@@ -424,14 +450,16 @@ class _AvatarsPageState extends State<AvatarsPage> {
       return;
     }
     final stat = AvatarWithStat(avatarDetail);
-    _fetchMainAvatarSize(stat.pc.main, "$errorTarget PC");
-    _fetchMainAvatarSize(stat.android.main, "$errorTarget Android");
+    _fetchMainAvatarSize(avatarDetail, stat.pc.main, "$errorTarget PC");
+    _fetchMainAvatarSize(
+        avatarDetail, stat.android.main, "$errorTarget Android");
     setState(() {
       _sortAvatars();
     });
   }
 
-  void _fetchMainAvatarSize(UnityPackage? up, String errorTarget) async {
+  void _fetchMainAvatarSize(
+      Avatar avatar, UnityPackage? up, String errorTarget) async {
     if (up == null) {
       return;
     }
@@ -446,10 +474,11 @@ class _AvatarsPageState extends State<AvatarsPage> {
     }
     final ap = AvatarPackageInformation()
       ..unityPackageId = up.id
+      ..version = avatar.version
       ..size = size;
     await _avatarPackageInformationDb.put(ap);
     setState(() {
-      _avatarPackageInformations[up.id] = ap;
+      _avatarPackageInformations[(ap.unityPackageId, ap.version)] = ap;
     });
   }
 
@@ -818,11 +847,15 @@ class _AvatarsPageState extends State<AvatarsPage> {
                               child: AvatarView(
                                   avatar: avatar,
                                   pcAvatarPackageInformation:
-                                      _avatarPackageInformations[
-                                          avatar.pc.main?.id],
+                                      _avatarPackageInformations[(
+                                    avatar.pc.main?.id,
+                                    avatar.version
+                                  )],
                                   androidAvatarPackageInformation:
-                                      _avatarPackageInformations[
-                                          avatar.android.main?.id],
+                                      _avatarPackageInformations[(
+                                    avatar.android.main?.id,
+                                    avatar.version
+                                  )],
                                   selected: _editTagAvatarTag != null &&
                                       _editTagAvatarTag!.avatarIds
                                           .contains(avatar.id)),
