@@ -91,6 +91,7 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
+          cache-dependency-path: scripts/package-lock.json
 
       - name: npm ci
         working-directory: scripts
