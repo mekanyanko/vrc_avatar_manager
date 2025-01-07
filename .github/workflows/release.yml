@@ -47,7 +47,7 @@ jobs:
           echo "${{ secrets.DSA_PRIV }}" > dsa_priv.pem
           dart run auto_updater:sign_update Output/vrc_avatar_manager-${{ github.ref_name }}.0-installer.exe > sig
           cat sig
-          echo "sig='$(cat sig)'" >> $GITHUB_OUTPUT
+          echo "sig='$(cat sig)'" >> $env:GITHUB_OUTPUT
           rm sig
           rm dsa_priv.pem
 
