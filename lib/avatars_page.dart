@@ -650,25 +650,28 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                                   ),
                                                 if (_editTagAvatars &&
                                                     tag.type == TagType.items)
-                                                  TagCompanionButton(
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        if (_editTagAvatarTag ==
-                                                            tag) {
-                                                          _editTagAvatarTag =
-                                                              null;
-                                                        } else {
-                                                          _editTagAvatarTag =
-                                                              tag;
-                                                        }
-                                                      });
-                                                    },
-                                                    icon:
-                                                        const Icon(Icons.edit),
-                                                    selected:
-                                                        _editTagAvatarTag ==
-                                                            tag,
-                                                  ),
+                                                  Tooltip(
+                                                      message:
+                                                          "アバターをクリックで選択or解除\nCtrl+Aで全選択&全解除",
+                                                      child: TagCompanionButton(
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            if (_editTagAvatarTag ==
+                                                                tag) {
+                                                              _editTagAvatarTag =
+                                                                  null;
+                                                            } else {
+                                                              _editTagAvatarTag =
+                                                                  tag;
+                                                            }
+                                                          });
+                                                        },
+                                                        icon: const Icon(
+                                                            Icons.edit),
+                                                        selected:
+                                                            _editTagAvatarTag ==
+                                                                tag,
+                                                      )),
                                               ]))
                                           .toList(),
                                     ))))
