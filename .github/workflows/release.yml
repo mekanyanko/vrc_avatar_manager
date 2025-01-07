@@ -93,6 +93,7 @@ jobs:
           cache: npm
 
       - name: npm ci
+        working-directory: scripts
         run: npm ci
 
       - name: Build appcast.xml
