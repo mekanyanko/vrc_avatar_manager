@@ -26,13 +26,10 @@ const item: AppcastItem = {
   os: "windows",
   length: Number(length),
   dsaSignature,
+  releaseNotesLink: `https://github.com/Narazaka/vrc_avatar_manager/releases/tag/v${version}`,
 };
 
-const previousUrl = "https://narazaka.github.io/vrc_avatar_manager/appcast.xml";
-const previousResult = await fetch(previousUrl);
-const previous = previousResult.ok ? await previousResult.text() : undefined;
-
-const xml = createAppcastXml({ previous, setting: {
+const xml = createAppcastXml({ setting: {
   title: "VRChat Avatar Manager",
   description: "Most recent updates to VRChat Avatar Manager",
   language: "en",

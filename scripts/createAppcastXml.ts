@@ -16,9 +16,13 @@ export type AppcastXML = {
 
 export type AppcastXMLItem = {
   title: string;
+  description?: string;
   'sparkle:version'?: string;
   'sparkle:shortVersionString'?: string;
   'sparkle:releaseNotesLink'?: string;
+  'sparkle:minimumSystemVersion'?: string;
+  'sparkle:minimumAutoupdateVersion'?: string;
+  'sparkle:ignoreSkippedUpgradesBelowVersion'?: string;
   pubDate: string;
   enclosure: {
     '@url': string;
@@ -38,9 +42,13 @@ export type AppcastSetting = {
 
 export type AppcastItemBase = {
   version: string;
+  description?: string;
   url: string;
   pubDate: Date;
   releaseNotesLink?: string;
+  minimumSystemVersion?: string;
+  minimumAutoupdateVersion?: string;
+  ignoreSkippedUpgradesBelowVersion?: string;
   os: "windows" | "macos";
   length: number;
   edSignature?: string;
@@ -66,8 +74,7 @@ const emptyAppcastXML: AppcastXML = {
 function itemToXml(item: AppcastItem): AppcastXMLItem {
   const xmlItem: AppcastXMLItem = {
     title: `Version ${item.version}`,
-    'sparkle:version': "2",
-    "sparkle:shortVersionString": item.version,
+    'sparkle:version': item.version,
     pubDate: format(item.pubDate, "EEE, d LLL yyyy HH:mm:dd xx"),
     enclosure: {
       '@url': item.url,
@@ -76,8 +83,20 @@ function itemToXml(item: AppcastItem): AppcastXMLItem {
       '@type': 'application/octet-stream'
     }
   }
+  if (item.description) {
+    xmlItem.description = item.description;
+  }
   if (item.releaseNotesLink) {
     xmlItem['sparkle:releaseNotesLink'] = item.releaseNotesLink;
+  }
+  if (item.minimumSystemVersion) {
+    xmlItem['sparkle:minimumSystemVersion'] = item.minimumSystemVersion;
+  }
+  if (item.minimumAutoupdateVersion) {
+    xmlItem['sparkle:minimumAutoupdateVersion'] = item.minimumAutoupdateVersion;
+  }
+  if (item.ignoreSkippedUpgradesBelowVersion) {
+    xmlItem['sparkle:ignoreSkippedUpgradesBelowVersion'] = item.ignoreSkippedUpgradesBelowVersion;
   }
   if (item.edSignature) {
     xmlItem.enclosure['@sparkle:edSignature'] = item.edSignature;
