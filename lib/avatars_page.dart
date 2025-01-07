@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -6,12 +7,15 @@ import 'package:vrc_avatar_manager/avatar_view.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
 import 'package:vrc_avatar_manager/clickable_view.dart';
 import 'package:vrc_avatar_manager/custom_scroll_behaviour.dart';
+import 'package:vrc_avatar_manager/db/avatar_package_information.dart';
+import 'package:vrc_avatar_manager/db/avatar_package_information_db.dart';
 import 'package:vrc_avatar_manager/db/tag.dart';
 import 'package:vrc_avatar_manager/db/tag_type.dart';
 import 'package:vrc_avatar_manager/db/tags_db.dart';
 import 'package:vrc_avatar_manager/order_dialog.dart';
 import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
+import 'package:vrc_avatar_manager/setting_dialog.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_button.dart';
 import 'package:vrc_avatar_manager/tag_companion_button.dart';
@@ -30,9 +34,12 @@ class AvatarsPage extends StatefulWidget {
 }
 
 class _AvatarsPageState extends State<AvatarsPage> {
+  late Timer _avatarSizeTimer;
   late final VrcApi _api;
   late final TagsDb _tagsDb;
   bool _tagsDbLoaded = false;
+  late final AvatarPackageInformationDb _avatarPackageInformationDb;
+  bool _avatarPackageInformationDbLoaded = false;
 
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
@@ -45,6 +52,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
       MapValueSet({}, (avatar) => avatar.id);
 
   List<AvatarWithStat> _sortedAvatars = [];
+
+  final Map<String, AvatarPackageInformation> _avatarPackageInformations = {};
 
   bool _confirmWhenChangeAvatar = false;
   bool _ascending = false;
@@ -66,6 +75,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   @override
   void initState() {
     super.initState();
+    _avatarSizeTimer = Timer.periodic(Duration(seconds: 30), _fetchAvatarSize);
     _searchFocusNode.addListener(() {
       setState(() {
         _searchFocused = _searchFocusNode.hasFocus;
@@ -75,6 +85,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
     _ensureDb().then((_) {
       setState(() {
         _tagsDbLoaded = true;
+        _avatarPackageInformationDbLoaded = true;
       });
       _loadAvatars();
       _watchTagsDb();
@@ -85,6 +96,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   @override
   void dispose() {
     _searchFocusNode.dispose();
+    _avatarSizeTimer.cancel();
     super.dispose();
   }
 
@@ -106,6 +118,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   Future<void> _ensureDb() async {
     _tagsDb = await TagsDb.instance(widget.accountId);
     await _tagsDb.migrate();
+    _avatarPackageInformationDb = await AvatarPackageInformationDb.instance;
   }
 
   void _sortAvatars() {
@@ -141,8 +154,18 @@ class _AvatarsPageState extends State<AvatarsPage> {
         var avatarStats =
             avatars.map((avatar) => AvatarWithStat(avatar)).toList();
         _newAvatars.addAll(avatarStats);
+        final aps = await _avatarPackageInformationDb.getAllByUnitypackageIds({
+          ...avatarStats
+              .where((avatar) => avatar.hasPc)
+              .map((avatar) => avatar.pc.main!.id),
+          ...avatarStats
+              .where((avatar) => avatar.hasAndroid)
+              .map((avatar) => avatar.android.main!.id),
+        });
         setState(() {
           _avatars.addAll(avatarStats);
+          _avatarPackageInformations
+              .addEntries(aps.map((ap) => MapEntry(ap.unityPackageId, ap)));
           _sortAvatars();
         });
       }
@@ -249,9 +272,16 @@ class _AvatarsPageState extends State<AvatarsPage> {
               title: const Text("アバター変更"),
               content: avatar == null
                   ? const Text("?")
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [AvatarView(avatar: avatar, detailed: true)]),
+                  : Column(mainAxisSize: MainAxisSize.min, children: [
+                      AvatarView(
+                        avatar: avatar,
+                        detailed: true,
+                        pcAvatarPackageInformation:
+                            _avatarPackageInformations[avatar.pc.main?.id],
+                        androidAvatarPackageInformation:
+                            _avatarPackageInformations[avatar.android.main?.id],
+                      )
+                    ]),
               actions: [
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -334,6 +364,68 @@ class _AvatarsPageState extends State<AvatarsPage> {
         });
   }
 
+  void _fetchAvatarSize(Timer timer) async {
+    print("[_fetchAvatarSize] called");
+    final prefs = await Prefs.instance;
+    if (!await prefs.fetchAvatarSize || !_avatarPackageInformationDbLoaded) {
+      return;
+    }
+    final targetUnityPackageIds = {
+      ..._avatars
+          .where((avatar) => avatar.hasPc)
+          .map((avatar) => avatar.pc.main!.id),
+      ..._avatars
+          .where((avatar) => avatar.hasAndroid)
+          .map((avatar) => avatar.android.main!.id),
+    };
+    targetUnityPackageIds.removeAll(_avatarPackageInformations.keys);
+    if (targetUnityPackageIds.isEmpty) {
+      return;
+    }
+
+    var targetAvatar = _filteredAvatars.firstWhereOrNull((avatar) =>
+            avatar.hasUnityPackageIdInMain(targetUnityPackageIds)) ??
+        _avatars.firstWhereOrNull(
+            (avatar) => avatar.hasUnityPackageIdInMain(targetUnityPackageIds));
+    if (targetAvatar == null) {
+      print("[_fetchAvatarSize] something wrong");
+      return;
+    }
+
+    final errorTarget = "${targetAvatar.id} ${targetAvatar.name}";
+
+    final avatarDetail = await _api.avatar(targetAvatar.id);
+    if (avatarDetail == null) {
+      print("[_fetchAvatarSize][$errorTarget] Failed to load avatar");
+      return;
+    }
+    final stat = AvatarWithStat(avatarDetail);
+    _fetchMainAvatarSize(stat.pc.main, "$errorTarget PC");
+    _fetchMainAvatarSize(stat.android.main, "$errorTarget Android");
+  }
+
+  void _fetchMainAvatarSize(UnityPackage? up, String errorTarget) async {
+    if (up == null) {
+      return;
+    }
+    if (up.assetUrl == null) {
+      print("[_fetchMainAvatarSize][$errorTarget] assetUrl empty");
+      return;
+    }
+    final size = await _api.fileSize(up.assetUrl!);
+    if (size == null) {
+      print("[_fetchMainAvatarSize][$errorTarget] Failed to get size");
+      return;
+    }
+    final ap = AvatarPackageInformation()
+      ..unityPackageId = up.id
+      ..size = size;
+    await _avatarPackageInformationDb.put(ap);
+    setState(() {
+      _avatarPackageInformations[up.id] = ap;
+    });
+  }
+
   void _showInfo(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -413,12 +505,19 @@ class _AvatarsPageState extends State<AvatarsPage> {
                               '${filteredAvatars.length} avatars',
                             ))),
                 actions: [
+                  Tooltip(
+                      message: "設定",
+                      child: IconButton(
+                          onPressed: () {
+                            SettingDialog.show(context);
+                          },
+                          icon: const Icon(Icons.settings))),
                   SizedBox(
-                      width: 200,
+                      width: 160,
                       child: Tooltip(
                           message: "アバターをクリックしたときに確認ダイアログを出します",
                           child: CheckboxListTile(
-                              title: const Text('アバター変更確認'),
+                              title: const Text('変更確認'),
                               value: _confirmWhenChangeAvatar,
                               onChanged: _setConfirmWhenChangeAvatar))),
                   Tooltip(
@@ -690,6 +789,12 @@ class _AvatarsPageState extends State<AvatarsPage> {
                               key: Key(avatar.id),
                               child: AvatarView(
                                   avatar: avatar,
+                                  pcAvatarPackageInformation:
+                                      _avatarPackageInformations[
+                                          avatar.pc.main?.id],
+                                  androidAvatarPackageInformation:
+                                      _avatarPackageInformations[
+                                          avatar.android.main?.id],
                                   selected: _editTagAvatarTag != null &&
                                       _editTagAvatarTag!.avatarIds
                                           .contains(avatar.id)),

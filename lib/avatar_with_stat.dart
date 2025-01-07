@@ -37,4 +37,10 @@ class AvatarWithStat {
   ReleaseStatus get releaseStatus => avatar.releaseStatus;
   DateTime get createdAt => avatar.createdAt;
   DateTime get updatedAt => avatar.updatedAt;
+
+  bool hasUnityPackageIdInMain(Iterable<String> ids) =>
+      pc.hasMain && ids.contains(pc.main!.id) ||
+      android.hasMain && ids.contains(android.main!.id);
+  List<String> get mainUnityPackageIds =>
+      [if (pc.hasMain) pc.main!.id, if (android.hasMain) android.main!.id];
 }

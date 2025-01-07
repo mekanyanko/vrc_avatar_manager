@@ -12,6 +12,7 @@ const _confirmWhenChangeAvatar = "confirmWhenChangeAvatar";
 const _selectSingleTag = "selectSingleTag";
 const _ascending = "ascending";
 const _sortBy = "sortBy";
+const _fetchAvatarSize = "fetchAvatarSize";
 
 class Prefs {
   static Prefs? _instance;
@@ -126,5 +127,13 @@ class Prefs {
 
   Future<void> setSortBy(SortBy value) async {
     await _prefs.setInt(_sortBy, value.index);
+  }
+
+  Future<bool> get fetchAvatarSize async {
+    return _prefs.getBool(_fetchAvatarSize) ?? false;
+  }
+
+  Future<void> setFetchAvatarSize(bool value) async {
+    await _prefs.setBool(_fetchAvatarSize, value);
   }
 }
