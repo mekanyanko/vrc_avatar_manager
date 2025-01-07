@@ -214,7 +214,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
       page++;
     }
     setState(() {
-      _avatars.removeAll(_avatars.difference(_newAvatars));
+      _avatars.clear();
+      _avatars.addAll(_newAvatars);
       _sortAvatars();
     });
   }
