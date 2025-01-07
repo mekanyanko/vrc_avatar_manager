@@ -1,3 +1,4 @@
+import 'package:auto_updater/auto_updater.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,8 +12,15 @@ import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:window_manager/window_manager.dart';
 
+const feedURL = 'https://narazaka.github.io/vrc_avatar_manager/appcast.xml';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await autoUpdater.setFeedURL(feedURL);
+  await autoUpdater.checkForUpdates();
+  await autoUpdater.setScheduledCheckInterval(3600);
+
   VrcApi.appVersion = (await PackageInfo.fromPlatform()).version;
   AppDir.dir = (await getApplicationSupportDirectory()).path;
   final prefs = await Prefs.instance;
