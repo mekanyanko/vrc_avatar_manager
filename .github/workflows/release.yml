@@ -44,7 +44,7 @@ jobs:
       - name: Sign auto updater signature
         id: auto_updater_sign
         run: |
-          echo ${{ secrets.DSA_PRIV }} > dsa_priv.pem
+          echo "${{ secrets.DSA_PRIV }}" > dsa_priv.pem
           dart run auto_updater:sign_update Output/vrc_avatar_manager-${{ github.ref_name }}.0-installer.exe > sig
           echo "sig=$(cat sig)" >> $GITHUB_OUTPUT
           rm sig
