@@ -18,7 +18,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await autoUpdater.setFeedURL(feedURL);
-  await autoUpdater.checkForUpdates();
+  await autoUpdater.checkForUpdates(inBackground: true);
   await autoUpdater.setScheduledCheckInterval(3600);
 
   VrcApi.appVersion = (await PackageInfo.fromPlatform()).version;
