@@ -136,6 +136,30 @@ class _AvatarsPageState extends State<AvatarsPage> {
           comparator(a.name, b.name) * 100 +
           comparator(a.createdAt, b.createdAt) * 10 +
           comparator(a.updatedAt, b.updatedAt)),
+      SortBy.pcSize => _avatars.sorted((a, b) =>
+          comparator<num>(
+                  (_avatarPackageInformations[a.pc.main?.id]?.size ?? 0),
+                  (_avatarPackageInformations[b.pc.main?.id]?.size ?? 0)) *
+              10000 +
+          comparator<num>(
+                  (_avatarPackageInformations[a.android.main?.id]?.size ?? 0),
+                  (_avatarPackageInformations[b.android.main?.id]?.size ?? 0)) *
+              1000 +
+          comparator(a.name, b.name) * 100 +
+          comparator(a.createdAt, b.createdAt) * 10 +
+          comparator(a.updatedAt, b.updatedAt)),
+      SortBy.androidSize => _avatars.sorted((a, b) =>
+          comparator<num>(
+                  (_avatarPackageInformations[a.android.main?.id]?.size ?? 0),
+                  (_avatarPackageInformations[b.android.main?.id]?.size ?? 0)) *
+              10000 +
+          comparator<num>(
+                  (_avatarPackageInformations[a.pc.main?.id]?.size ?? 0),
+                  (_avatarPackageInformations[b.pc.main?.id]?.size ?? 0)) *
+              1000 +
+          comparator(a.name, b.name) * 100 +
+          comparator(a.createdAt, b.createdAt) * 10 +
+          comparator(a.updatedAt, b.updatedAt)),
     };
   }
 
@@ -402,6 +426,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
     final stat = AvatarWithStat(avatarDetail);
     _fetchMainAvatarSize(stat.pc.main, "$errorTarget PC");
     _fetchMainAvatarSize(stat.android.main, "$errorTarget Android");
+    setState(() {
+      _sortAvatars();
+    });
   }
 
   void _fetchMainAvatarSize(UnityPackage? up, String errorTarget) async {
@@ -538,6 +565,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                     SortBy.createdAt => "Created At",
                                     SortBy.updatedAt => "Updated At",
                                     SortBy.name => "Name",
+                                    SortBy.pcSize => "PC Size",
+                                    SortBy.androidSize => "Android Size",
                                   }),
                                 ))
                             .toList(),
