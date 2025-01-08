@@ -88,10 +88,15 @@ class _SettingDialogState extends State<SettingDialog> {
                             return;
                           }
                           final targetUnityPackageIds = widget.loadedAvatars!
-                              .where((a) => a.avatar.unityPackages.any((up) =>
-                                  (up.variant != "security" &&
-                                      up.variant != "imposter") ||
-                                  up.unityVersion.startsWith("5")))
+                              .where((a) =>
+                                  a.avatar.unityPackages.any((up) =>
+                                      (up.variant != "security" &&
+                                          up.variant != "imposter")) ||
+                                  a.avatar.unityPackages
+                                          .map((up) => up.unityVersion)
+                                          .toSet()
+                                          .length >
+                                      1)
                               .expand((a) => a.avatar.unityPackages)
                               .map((up) => up.id)
                               .toList();

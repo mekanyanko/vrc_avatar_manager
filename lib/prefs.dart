@@ -4,9 +4,9 @@ import 'package:vrc_avatar_manager/sort_by.dart';
 
 const _tagDbVersion = "tagDbVersion";
 const _avatarPackageInformationDbUnityPackageSelectBugFixed =
-    "avatarPackageInformationDbUnityPackageSelectBugFixed";
+    "avatarPackageInformationDbUnityPackageSelectBugFixed2";
 const _avatarPackageInformationDbUnityPackageSelectBugFixedByAccount =
-    "avatarPackageInformationDbUnityPackageSelectBugFixedByAccount";
+    "avatarPackageInformationDbUnityPackageSelectBugFixedByAccount2";
 const _windowWidth = "windowWidth";
 const _windowHeight = "windowHeight";
 const _windowPositionX = "windowPositionX";
