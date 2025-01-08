@@ -91,7 +91,7 @@ class _SettingDialogState extends State<SettingDialog> {
                               .where((a) =>
                                   a.avatar.unityPackages.any((up) =>
                                       (up.variant != "security" &&
-                                          up.variant != "imposter")) ||
+                                          up.variant != "impostor")) ||
                                   a.avatar.unityPackages
                                           .map((up) => up.unityVersion)
                                           .toSet()
