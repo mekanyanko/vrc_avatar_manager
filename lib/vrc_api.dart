@@ -125,21 +125,27 @@ class VrcApi {
         ],
       },
     );
-    final res = await vrchatDart.rawApi.dio.head(url, options: options);
-    if (res.statusCode != 200) {
-      print("file head error: ${res.statusCode} ${res.statusMessage}");
+    try {
+      final res = await vrchatDart.rawApi.dio.head(url, options: options);
+      if (res.statusCode != 200) {
+        print("file head error: ${res.statusCode} ${res.statusMessage}");
+        return null;
+      }
+      final lenStr = res.headers.value("content-length");
+      if (lenStr == null) {
+        print("file head error: no content-length");
+        return null;
+      }
+      final len = int.tryParse(lenStr);
+      if (len == null) {
+        print("file head error: invalid content-length");
+        return null;
+      }
+      return len;
+    } catch (e) {
+      print("file head dio error: $e");
+      print(url);
       return null;
     }
-    final lenStr = res.headers.value("content-length");
-    if (lenStr == null) {
-      print("file head error: no content-length");
-      return null;
-    }
-    final len = int.tryParse(lenStr);
-    if (len == null) {
-      print("file head error: invalid content-length");
-      return null;
-    }
-    return len;
   }
 }

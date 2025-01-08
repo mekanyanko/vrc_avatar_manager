@@ -2,11 +2,36 @@ import 'package:vrc_avatar_manager/avatar_stat.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
 import 'package:collection/collection.dart';
 
+// high num high priority
+int _variantOrder(String? variant) {
+  switch (variant) {
+    case "security":
+      return 9;
+    case "standard":
+      return 2;
+    case "impostor":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+int _unityVersionOrder(UnityPackage up) {
+  // 5.6系などはなぜかcreatedAtが2024-09-25とかのレコードが存在し、それのfileが404になるため優先度を下げる
+  if (up.unityVersion.startsWith("5")) return 0;
+  return 1;
+}
+
 class AvatarWithStat {
   AvatarWithStat(this.avatar) {
     var ups = avatar.unityPackages
-        .sortedBy((avatar) => avatar.createdAt ?? DateTime(2000))
-        .reversed // latest first
+        .sortedBy<num>((up) =>
+            -_unityVersionOrder(up) *
+                10000000000 *
+                1000 // 10000000000(current 1736327388 * 10 order)
+            -
+            (up.createdAt?.millisecondsSinceEpoch ?? 0) * 10 -
+            _variantOrder(up.variant))
         .toList();
     pc = AvatarStat(
         main: ups.firstWhereOrNull((u) =>

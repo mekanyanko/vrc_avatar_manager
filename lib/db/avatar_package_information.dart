@@ -10,4 +10,9 @@ class AvatarPackageInformation {
   late String unityPackageId;
   late int version;
   late int size;
+
+  @override
+  String toString() {
+    return 'AvatarPackageInformation{unityPackageId: $unityPackageId, version: $version, size: $size}';
+  }
 }

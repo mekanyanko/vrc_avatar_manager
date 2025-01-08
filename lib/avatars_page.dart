@@ -420,6 +420,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
       return;
     }
 
+    print("[_fetchAvatarSize] ${targetAvatar.name}");
     final errorTarget = "${targetAvatar.id} ${targetAvatar.name}";
 
     final avatarDetail = await _api.avatar(targetAvatar.id);
@@ -448,12 +449,14 @@ class _AvatarsPageState extends State<AvatarsPage> {
     final size = await _api.fileSize(up.assetUrl!);
     if (size == null) {
       print("[_fetchMainAvatarSize][$errorTarget] Failed to get size");
+      print(up);
       return;
     }
     final ap = AvatarPackageInformation()
       ..unityPackageId = up.id
       ..version = avatar.version
       ..size = size;
+    print(ap);
     await _avatarPackageInformationDb.put(ap);
     setState(() {
       _avatarPackageInformations[ap.unityPackageId] = ap;
