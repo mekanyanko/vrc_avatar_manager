@@ -432,15 +432,15 @@ class _AvatarsPageState extends State<AvatarsPage> {
       return;
     }
     final stat = AvatarWithStat(avatarDetail);
-    _fetchMainAvatarSize(avatarDetail, stat.pc.main, "$errorTarget PC");
-    _fetchMainAvatarSize(
+    await _fetchMainAvatarSize(avatarDetail, stat.pc.main, "$errorTarget PC");
+    await _fetchMainAvatarSize(
         avatarDetail, stat.android.main, "$errorTarget Android");
     setState(() {
       _sortAvatars();
     });
   }
 
-  void _fetchMainAvatarSize(
+  Future<void> _fetchMainAvatarSize(
       Avatar avatar, UnityPackage? up, String errorTarget) async {
     if (up == null) {
       return;
