@@ -3,6 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 
 const _tagDbVersion = "tagDbVersion";
+const _avatarPackageInformationDbUnityPackageSelectBugFixed =
+    "avatarPackageInformationDbUnityPackageSelectBugFixed";
+const _avatarPackageInformationDbUnityPackageSelectBugFixedByAccount =
+    "avatarPackageInformationDbUnityPackageSelectBugFixedByAccount";
 const _windowWidth = "windowWidth";
 const _windowHeight = "windowHeight";
 const _windowPositionX = "windowPositionX";
@@ -31,6 +35,32 @@ class Prefs {
 
   Future<void> setTagDbVersion(String accountId, int value) async {
     await _prefs.setInt("$_tagDbVersion.$accountId", value);
+  }
+
+  Future<bool> get avatarPackageInformationDbUnityPackageSelectBugFixed async {
+    return _prefs
+            .getBool(_avatarPackageInformationDbUnityPackageSelectBugFixed) ??
+        false;
+  }
+
+  Future<void> setAvatarPackageInformationDbUnityPackageSelectBugFixed(
+      bool value) async {
+    await _prefs.setBool(
+        _avatarPackageInformationDbUnityPackageSelectBugFixed, value);
+  }
+
+  Future<bool> avatarPackageInformationDbUnityPackageSelectBugFixedByAccount(
+      String accountId) async {
+    return _prefs.getBool(
+            _avatarPackageInformationDbUnityPackageSelectBugFixedByAccount) ??
+        false;
+  }
+
+  Future<void> setAvatarPackageInformationDbUnityPackageSelectBugFixedByAccount(
+      String accountId, bool value) async {
+    await _prefs.setBool(
+        "$_avatarPackageInformationDbUnityPackageSelectBugFixedByAccount.$accountId",
+        value);
   }
 
   Future<double> get windowWidth async {

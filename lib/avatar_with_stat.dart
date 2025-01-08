@@ -12,7 +12,8 @@ int _variantOrder(String? variant) {
     case "impostor":
       return 1;
     default:
-      return 0;
+      throw Exception("Unknown variant: $variant");
+    // return 0;
   }
 }
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:isar/isar.dart';
 import 'package:vrc_avatar_manager/app_dir.dart';
 import 'package:vrc_avatar_manager/db/avatar_package_information.dart';
+import 'package:vrc_avatar_manager/prefs.dart';
 
 class AvatarPackageInformationDb {
   static AvatarPackageInformationDb? _instance;
@@ -16,6 +17,10 @@ class AvatarPackageInformationDb {
     return _instance ??= AvatarPackageInformationDb._(await Isar.open(
         [AvatarPackageInformationSchema],
         directory: dir, name: 'avatar_package_informations'));
+  }
+
+  Future<int> getCount() async {
+    return isar.avatarPackageInformations.where().count();
   }
 
   Future<List<AvatarPackageInformation>> getAll() async {
@@ -42,14 +47,26 @@ class AvatarPackageInformationDb {
     });
   }
 
-  Future<void> delete(String accountId) async {
+  Future<void> deleteAll(List<String> unityPackageIds) async {
     await isar.writeTxn(() async {
-      await isar.avatarPackageInformations.delete(int.parse(accountId));
+      await isar.avatarPackageInformations
+          .deleteAllByUnityPackageId(unityPackageIds);
     });
   }
 
   Stream<void> watchAccounts({fireImmediately = false}) {
     return isar.avatarPackageInformations
         .watchLazy(fireImmediately: fireImmediately);
+  }
+
+  Future<void> migrate() async {
+    final prefs = await Prefs.instance;
+    final avatarPackageInformationDbUnityPackageSelectBugFixed =
+        await prefs.avatarPackageInformationDbUnityPackageSelectBugFixed;
+    if (!avatarPackageInformationDbUnityPackageSelectBugFixed &&
+        await getCount() == 0) {
+      // まっさらなら
+      await prefs.setAvatarPackageInformationDbUnityPackageSelectBugFixed(true);
+    }
   }
 }

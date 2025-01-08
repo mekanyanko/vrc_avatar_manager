@@ -119,6 +119,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
     _tagsDb = await TagsDb.instance(widget.accountId);
     await _tagsDb.migrate();
     _avatarPackageInformationDb = await AvatarPackageInformationDb.instance;
+    await _avatarPackageInformationDb.migrate();
   }
 
   void _sortAvatars() {
@@ -160,6 +161,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
           comparator(a.updatedAt, b.updatedAt)),
     };
   }
+
+  bool get _loadingAvatars => _avatars.length != _newAvatars.length;
 
   void _loadAvatars() async {
     _newAvatars =
@@ -530,7 +533,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
             child: Scaffold(
               appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                title: _avatars.length != _newAvatars.length
+                title: _loadingAvatars
                     ? Text(
                         "${filteredAvatars.length} avatars (fetching ${_newAvatars.length} avatars)")
                     : GestureDetector(
@@ -545,7 +548,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
                       message: "設定",
                       child: IconButton(
                           onPressed: () {
-                            SettingDialog.show(context);
+                            SettingDialog.show(context, widget.accountId,
+                                _loadingAvatars ? null : _avatars);
                           },
                           icon: const Icon(Icons.settings))),
                   SizedBox(
