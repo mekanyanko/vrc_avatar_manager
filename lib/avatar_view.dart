@@ -87,7 +87,8 @@ class AvatarView extends StatelessWidget {
                 performanceIcon(avatar.pc.performanceRating!),
               if (pcAvatarPackageInformation != null)
                 Text(
-                  filesize(pcAvatarPackageInformation!.size, 1),
+                  filesize(pcAvatarPackageInformation!.size, 1)
+                      .replaceAll(" ", ""),
                   style: pcAvatarPackageInformation!.version == avatar.version
                       ? _sizeTextStyle
                       : _sizeTextInvalidStyle,
@@ -97,7 +98,8 @@ class AvatarView extends StatelessWidget {
                 performanceIcon(avatar.android.performanceRating!),
               if (androidAvatarPackageInformation != null)
                 Text(
-                  filesize(androidAvatarPackageInformation!.size, 1),
+                  filesize(androidAvatarPackageInformation!.size, 1)
+                      .replaceAll(" ", ""),
                   style:
                       androidAvatarPackageInformation!.version == avatar.version
                           ? _sizeTextStyle
