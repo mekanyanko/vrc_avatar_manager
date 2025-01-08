@@ -52,7 +52,7 @@ class Prefs {
   Future<bool> avatarPackageInformationDbUnityPackageSelectBugFixedByAccount(
       String accountId) async {
     return _prefs.getBool(
-            _avatarPackageInformationDbUnityPackageSelectBugFixedByAccount) ??
+            "$_avatarPackageInformationDbUnityPackageSelectBugFixedByAccount.$accountId") ??
         false;
   }
 
