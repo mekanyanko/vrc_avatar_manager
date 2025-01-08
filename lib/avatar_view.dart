@@ -15,6 +15,7 @@ import 'package:vrchat_dart/vrchat_dart.dart';
 final dateFormat = DateFormat('y-MM-dd');
 
 const _sizeTextStyle = TextStyle(fontSize: 11);
+const _sizeTextInvalidStyle = TextStyle(fontSize: 11, color: Colors.black45);
 
 class AvatarView extends StatelessWidget {
   const AvatarView(
@@ -87,7 +88,9 @@ class AvatarView extends StatelessWidget {
               if (pcAvatarPackageInformation != null)
                 Text(
                   filesize(pcAvatarPackageInformation!.size, 1),
-                  style: _sizeTextStyle,
+                  style: pcAvatarPackageInformation!.version == avatar.version
+                      ? _sizeTextStyle
+                      : _sizeTextInvalidStyle,
                 ),
               if (avatar.android.hasMain) VrcIcons.android,
               if (avatar.android.performanceRating != null)
@@ -95,7 +98,10 @@ class AvatarView extends StatelessWidget {
               if (androidAvatarPackageInformation != null)
                 Text(
                   filesize(androidAvatarPackageInformation!.size, 1),
-                  style: _sizeTextStyle,
+                  style:
+                      androidAvatarPackageInformation!.version == avatar.version
+                          ? _sizeTextStyle
+                          : _sizeTextInvalidStyle,
                 ),
             ],
           ),
