@@ -145,7 +145,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
                   (_avatarPackageInformations[a.android.main?.id]?.size ?? 0),
                   (_avatarPackageInformations[b.android.main?.id]?.size ?? 0)) *
               1000 +
-          comparator(a.name, b.name) * 100 +
           comparator(a.createdAt, b.createdAt) * 10 +
           comparator(a.updatedAt, b.updatedAt)),
       SortBy.androidSize => _avatars.sorted((a, b) =>
@@ -157,7 +156,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
                   (_avatarPackageInformations[a.pc.main?.id]?.size ?? 0),
                   (_avatarPackageInformations[b.pc.main?.id]?.size ?? 0)) *
               1000 +
-          comparator(a.name, b.name) * 100 +
           comparator(a.createdAt, b.createdAt) * 10 +
           comparator(a.updatedAt, b.updatedAt)),
     };
