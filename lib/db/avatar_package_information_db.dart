@@ -54,6 +54,12 @@ class AvatarPackageInformationDb {
     });
   }
 
+  Future<void> clear() async {
+    await isar.writeTxn(() async {
+      await isar.avatarPackageInformations.clear();
+    });
+  }
+
   Stream<void> watchAccounts({fireImmediately = false}) {
     return isar.avatarPackageInformations
         .watchLazy(fireImmediately: fireImmediately);

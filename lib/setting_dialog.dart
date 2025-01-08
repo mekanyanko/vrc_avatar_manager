@@ -113,7 +113,14 @@ class _SettingDialogState extends State<SettingDialog> {
                           });
                         },
                   child:
-                      Text("誤っている可能性のあるアバターサイズ情報を削除(このボタンを押した後アプリを再起動して下さい)"))
+                      Text("誤っている可能性のあるアバターサイズ情報を削除(このボタンを押した後アプリを再起動して下さい)")),
+            SizedBox(height: 10),
+            ElevatedButton(
+                onPressed: () async {
+                  final db = await AvatarPackageInformationDb.instance;
+                  await db.clear();
+                },
+                child: Text("アバターサイズ情報を完全に削除(このボタンを押した後アプリを再起動して下さい)"))
           ]))),
       actions: [
         ElevatedButton(
