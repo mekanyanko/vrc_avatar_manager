@@ -788,7 +788,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                                     tag.type == TagType.items)
                                                   Tooltip(
                                                       message:
-                                                          "アバターをクリックで選択or解除\nCtrl+Aで全選択&全解除",
+                                                          "アバターをクリックで選択or解除\nCtrl+Aで表示中を全選択or全解除",
                                                       child: TagCompanionButton(
                                                         onPressed: () {
                                                           setState(() {
