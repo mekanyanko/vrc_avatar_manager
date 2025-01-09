@@ -12,12 +12,12 @@ class SettingDialog extends StatefulWidget {
   @override
   State<SettingDialog> createState() => _SettingDialogState();
 
-  static Future<String?> show(
+  static Future<void> show(
     BuildContext context,
     String accountId,
     Iterable<AvatarWithStat>? loadedAvatars,
   ) async {
-    return showDialog<String>(
+    return showDialog<void>(
       context: context,
       builder: (context) {
         return SettingDialog(
@@ -33,6 +33,7 @@ class _SettingDialogState extends State<SettingDialog> {
   bool _fetchAvatarSize = false;
   bool _avatarPackageInformationDbUnityPackageSelectBugFixed = true;
   bool _avatarPackageInformationDbUnityPackageSelectBugFixedByAccount = true;
+  bool _multiLineTagsView = false;
 
   @override
   void dispose() {
@@ -50,12 +51,14 @@ class _SettingDialogState extends State<SettingDialog> {
           await prefs
               .avatarPackageInformationDbUnityPackageSelectBugFixedByAccount(
                   widget.accountId);
+      final multiLineTagsView = await prefs.multiLineTagsView;
       setState(() {
         _fetchAvatarSize = fetchAvatarSize;
         _avatarPackageInformationDbUnityPackageSelectBugFixed =
             avatarPackageInformationDbUnityPackageSelectBugFixed;
         _avatarPackageInformationDbUnityPackageSelectBugFixedByAccount =
             avatarPackageInformationDbUnityPackageSelectBugFixedByAccount;
+        _multiLineTagsView = multiLineTagsView;
       });
     });
   }
@@ -120,7 +123,17 @@ class _SettingDialogState extends State<SettingDialog> {
                   final db = await AvatarPackageInformationDb.instance;
                   await db.clear();
                 },
-                child: Text("アバターサイズ情報を完全に削除(このボタンを押した後アプリを再起動して下さい)"))
+                child: Text("アバターサイズ情報を完全に削除(このボタンを押した後アプリを再起動して下さい)")),
+            SizedBox(height: 10),
+            CheckboxListTile(
+              value: _multiLineTagsView,
+              onChanged: (value) {
+                setState(() {
+                  _multiLineTagsView = value!;
+                });
+              },
+              title: const Text("タグを複数行で表示する(実験的)"),
+            ),
           ]))),
       actions: [
         ElevatedButton(
@@ -131,6 +144,7 @@ class _SettingDialogState extends State<SettingDialog> {
 
             final prefs = await Prefs.instance;
             await prefs.setFetchAvatarSize(_fetchAvatarSize);
+            await prefs.setMultiLineTagsView(_multiLineTagsView);
 
             Navigator.of(context).pop();
           },

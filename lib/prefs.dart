@@ -14,6 +14,7 @@ const _windowPositionY = "windowPositionY";
 const _windowMaximized = "windowMaximized";
 const _confirmWhenChangeAvatar = "confirmWhenChangeAvatar";
 const _selectSingleTag = "selectSingleTag";
+const _multiLineTagsView = "multiLineTagsView";
 const _ascending = "ascending";
 const _sortBy = "sortBy";
 const _fetchAvatarSize = "fetchAvatarSize";
@@ -140,6 +141,14 @@ class Prefs {
 
   Future<void> setSelectSingleTag(bool value) async {
     await _prefs.setBool(_selectSingleTag, value);
+  }
+
+  Future<bool> get multiLineTagsView async {
+    return _prefs.getBool(_multiLineTagsView) ?? false;
+  }
+
+  Future<void> setMultiLineTagsView(bool value) async {
+    await _prefs.setBool(_multiLineTagsView, value);
   }
 
   Future<bool> get ascending async {

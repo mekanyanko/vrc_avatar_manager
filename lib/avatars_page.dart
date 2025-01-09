@@ -16,6 +16,7 @@ import 'package:vrc_avatar_manager/order_dialog.dart';
 import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/setting_dialog.dart';
+import 'package:vrc_avatar_manager/wrap_with_height.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_button.dart';
 import 'package:vrc_avatar_manager/tag_companion_button.dart';
@@ -62,6 +63,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
   bool _editTags = false;
   Tag? _editTagAvatarTag;
   bool _selectSingleTag = false;
+  bool _multiLineTagsView = false;
+
+  double _tagsHeight = 50;
 
   final Set<PerformanceRatings> _pcPerformanceBlocks = {};
   final Set<PerformanceRatings> _androidPerformanceBlocks = {};
@@ -106,6 +110,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
     var selectSingleTag = await prefs.selectSingleTag;
     var ascending = await prefs.ascending;
     var sortBy = await prefs.sortBy;
+    await _restoreMultiLineTagsView();
     setState(() {
       _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
       _selectSingleTag = selectSingleTag;
@@ -359,6 +364,17 @@ class _AvatarsPageState extends State<AvatarsPage> {
     await prefs.setConfirmWhenChangeAvatar(_confirmWhenChangeAvatar);
   }
 
+  Future<void> _restoreMultiLineTagsView() async {
+    final prefs = await Prefs.instance;
+    var multiLineTagsView = await prefs.multiLineTagsView;
+    setState(() {
+      _multiLineTagsView = multiLineTagsView;
+      if (!_multiLineTagsView) {
+        _tagsHeight = 50;
+      }
+    });
+  }
+
   void _showJson() async {
     await showDialog(
         context: context,
@@ -535,9 +551,10 @@ class _AvatarsPageState extends State<AvatarsPage> {
       Tooltip(
           message: "設定",
           child: IconButton(
-              onPressed: () {
-                SettingDialog.show(context, widget.accountId,
+              onPressed: () async {
+                await SettingDialog.show(context, widget.accountId,
                     _loadingAvatars ? null : _avatars);
+                await _restoreMultiLineTagsView();
               },
               icon: const Icon(Icons.settings))),
       SizedBox(
@@ -789,7 +806,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
                 title: _title(context, filteredAvatars),
                 actions: _actions(context),
                 bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(50),
+                    preferredSize: Size.fromHeight(_tagsHeight),
                     child: Row(
                       children: [
                         SizedBox(width: 200, child: _bottomMenu(context)),
@@ -797,12 +814,29 @@ class _AvatarsPageState extends State<AvatarsPage> {
                             width: MediaQuery.of(context).size.width - 200,
                             child: ScrollConfiguration(
                                 behavior: CustomScrollBehavior(),
-                                child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Wrap(
-                                      spacing: 6,
-                                      children: _tagButtons(context),
-                                    ))))
+                                child: _multiLineTagsView
+                                    ? Padding(
+                                        padding: EdgeInsets.all(2),
+                                        child: WrapWithHeight(
+                                          spacing: 6,
+                                          runSpacing: 6,
+                                          onSizeChanged: (size) {
+                                            if (size != null) {
+                                              setState(() {
+                                                _tagsHeight = size.height;
+                                              });
+                                            }
+                                          },
+                                          children: _tagButtons(context),
+                                        ))
+                                    : SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Padding(
+                                            padding: EdgeInsets.all(2),
+                                            child: Wrap(
+                                              spacing: 6,
+                                              children: _tagButtons(context),
+                                            )))))
                       ],
                     )),
               ),
