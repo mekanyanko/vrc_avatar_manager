@@ -4,11 +4,15 @@ VRC Avatar Manager
 
 アバターが多すぎる人のためのアバター変更ツール
 
-## Usage
+## 使い方
 
 アカウントを追加してログインするとアバター一覧が出るのでよしなに。
 
 XSOverlayなどのVRオーバーレイで表示してクリックして切り替える想定です。
+
+## インストール
+
+https://github.com/Narazaka/vrc_avatar_manager/releases/latest からインストーラー(*-installer.exe)をダウンロードしてインストールして下さい。
 
 ## スクリーンショット集
 
