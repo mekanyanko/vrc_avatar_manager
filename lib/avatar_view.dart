@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vrc_avatar_manager/avatar_with_stat.dart';
 import 'package:vrc_avatar_manager/db/avatar_package_information.dart';
 import 'package:vrc_avatar_manager/image_cache_manager.dart';
+import 'package:vrc_avatar_manager/small_icon_button.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
@@ -153,7 +155,13 @@ class AvatarView extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: avatar.id));
                     },
-                    child: const Text("Copy ID"))
+                    child: const Text("Copy ID")),
+                SmallIconButton(
+                    onPressed: () {
+                      launchUrl(Uri.parse(
+                          "https://vrchat.com/home/avatar/${avatar.id}"));
+                    },
+                    icon: Icon(Icons.open_in_new)),
               ],
             ),
         ]));
