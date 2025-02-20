@@ -16,8 +16,8 @@ import 'package:vrchat_dart/vrchat_dart.dart';
 
 final dateFormat = DateFormat('y-MM-dd');
 
-const _sizeTextStyle = TextStyle(fontSize: 11);
-const _sizeTextInvalidStyle = TextStyle(fontSize: 11, color: Colors.black45);
+const _sizeTextStyle = TextStyle(fontSize: 10);
+const _sizeTextInvalidStyle = TextStyle(fontSize: 10, color: Colors.black38);
 
 class AvatarView extends StatelessWidget {
   const AvatarView(
