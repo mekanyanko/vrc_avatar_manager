@@ -63,6 +63,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
   bool _editTags = false;
   Tag? _editTagAvatarTag;
   bool _selectSingleTag = false;
+  bool _showHaveImposter = false;
+  bool _showNotHaveImposter = false;
+  bool _showTags = false;
   bool _multiLineTagsView = false;
 
   double _tagsHeight = 50;
@@ -110,7 +113,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
     var selectSingleTag = await prefs.selectSingleTag;
     var ascending = await prefs.ascending;
     var sortBy = await prefs.sortBy;
-    await _restoreMultiLineTagsView();
+    await _restoreSettingsInDialog();
     setState(() {
       _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
       _selectSingleTag = selectSingleTag;
@@ -312,6 +315,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
                             _avatarPackageInformations[avatar.pc.main?.id],
                         androidAvatarPackageInformation:
                             _avatarPackageInformations[avatar.android.main?.id],
+                        showHaveImposter: _showHaveImposter,
+                        showNotHaveImposter: _showNotHaveImposter,
+                        showTags: _showTags,
                       )
                     ]),
               actions: [
@@ -364,10 +370,16 @@ class _AvatarsPageState extends State<AvatarsPage> {
     await prefs.setConfirmWhenChangeAvatar(_confirmWhenChangeAvatar);
   }
 
-  Future<void> _restoreMultiLineTagsView() async {
+  Future<void> _restoreSettingsInDialog() async {
     final prefs = await Prefs.instance;
+    var showHaveImposter = await prefs.showHaveImposter;
+    var showNotHaveImposter = await prefs.showNotHaveImposter;
+    var showTags = await prefs.showTags;
     var multiLineTagsView = await prefs.multiLineTagsView;
     setState(() {
+      _showHaveImposter = showHaveImposter;
+      _showNotHaveImposter = showNotHaveImposter;
+      _showTags = showTags;
       _multiLineTagsView = multiLineTagsView;
       if (!_multiLineTagsView) {
         _tagsHeight = 50;
@@ -554,7 +566,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
               onPressed: () async {
                 await SettingDialog.show(context, widget.accountId,
                     _loadingAvatars ? null : _avatars);
-                await _restoreMultiLineTagsView();
+                await _restoreSettingsInDialog();
               },
               icon: const Icon(Icons.settings))),
       SizedBox(
@@ -851,16 +863,20 @@ class _AvatarsPageState extends State<AvatarsPage> {
                         .map((avatar) => ClickableView(
                               key: Key(avatar.id),
                               child: AvatarView(
-                                  avatar: avatar,
-                                  pcAvatarPackageInformation:
-                                      _avatarPackageInformations[
-                                          avatar.pc.main?.id],
-                                  androidAvatarPackageInformation:
-                                      _avatarPackageInformations[
-                                          avatar.android.main?.id],
-                                  selected: _editTagAvatarTag != null &&
-                                      _editTagAvatarTag!.avatarIds
-                                          .contains(avatar.id)),
+                                avatar: avatar,
+                                pcAvatarPackageInformation:
+                                    _avatarPackageInformations[
+                                        avatar.pc.main?.id],
+                                androidAvatarPackageInformation:
+                                    _avatarPackageInformations[
+                                        avatar.android.main?.id],
+                                selected: _editTagAvatarTag != null &&
+                                    _editTagAvatarTag!.avatarIds
+                                        .contains(avatar.id),
+                                showHaveImposter: _showHaveImposter,
+                                showNotHaveImposter: _showNotHaveImposter,
+                                showTags: _showTags,
+                              ),
                               onTap: () => _editTagAvatarTag == null
                                   ? _changeAvatar(avatar.id)
                                   : _toggleTagAvatar(avatar.id),

@@ -18,6 +18,9 @@ const _multiLineTagsView = "multiLineTagsView";
 const _ascending = "ascending";
 const _sortBy = "sortBy";
 const _fetchAvatarSize = "fetchAvatarSize";
+const _showHaveImposter = "showHaveImposter";
+const _showNotHaveImposter = "showNotHaveImposter";
+const _showTags = "showTags";
 
 class Prefs {
   static Prefs? _instance;
@@ -174,5 +177,29 @@ class Prefs {
 
   Future<void> setFetchAvatarSize(bool value) async {
     await _prefs.setBool(_fetchAvatarSize, value);
+  }
+
+  Future<bool> get showHaveImposter async {
+    return _prefs.getBool(_showHaveImposter) ?? true;
+  }
+
+  Future<void> setShowHaveImposter(bool value) async {
+    await _prefs.setBool(_showHaveImposter, value);
+  }
+
+  Future<bool> get showNotHaveImposter async {
+    return _prefs.getBool(_showNotHaveImposter) ?? false;
+  }
+
+  Future<void> setShowNotHaveImposter(bool value) async {
+    await _prefs.setBool(_showNotHaveImposter, value);
+  }
+
+  Future<bool> get showTags async {
+    return _prefs.getBool(_showTags) ?? true;
+  }
+
+  Future<void> setShowTags(bool value) async {
+    await _prefs.setBool(_showTags, value);
   }
 }

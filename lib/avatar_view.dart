@@ -19,20 +19,36 @@ final dateFormat = DateFormat('y-MM-dd');
 const _sizeTextStyle = TextStyle(fontSize: 10);
 const _sizeTextInvalidStyle = TextStyle(fontSize: 10, color: Colors.black38);
 
+final _tagStrings = {
+  "content_horror": "ホラー",
+  "content_gore": "ゴア",
+  "content_sex": "性的",
+  "content_adult": "成人向",
+  "content_violence": "暴力",
+  "author_quest_fallback": "Fallback",
+};
+
 class AvatarView extends StatelessWidget {
-  const AvatarView(
-      {super.key,
-      required this.avatar,
-      required this.pcAvatarPackageInformation,
-      required this.androidAvatarPackageInformation,
-      this.selected = false,
-      this.detailed = false});
+  const AvatarView({
+    super.key,
+    required this.avatar,
+    required this.pcAvatarPackageInformation,
+    required this.androidAvatarPackageInformation,
+    this.selected = false,
+    this.detailed = false,
+    this.showHaveImposter = true,
+    this.showNotHaveImposter = true,
+    this.showTags = true,
+  });
 
   final AvatarWithStat avatar;
   final AvatarPackageInformation? pcAvatarPackageInformation;
   final AvatarPackageInformation? androidAvatarPackageInformation;
   final bool selected;
   final bool detailed;
+  final bool showHaveImposter;
+  final bool showNotHaveImposter;
+  final bool showTags;
 
   static Image performanceIcon(PerformanceRatings p) {
     switch (p) {
@@ -69,7 +85,7 @@ class AvatarView extends StatelessWidget {
         ));
     return Container(
         width: 200,
-        height: detailed ? 290 : 220,
+        height: 220 + (detailed ? 70 : 0) + (showTags ? 20 : 0),
         color: selected ? Colors.green : null,
         child: Column(children: [
           if (avatar.releaseStatus == ReleaseStatus.public)
@@ -107,8 +123,43 @@ class AvatarView extends StatelessWidget {
                           ? _sizeTextStyle
                           : _sizeTextInvalidStyle,
                 ),
+              if ((showHaveImposter && avatar.hasImpostor))
+                Tooltip(
+                  message: "Impostorあり",
+                  child: const material.Badge(
+                    label: Text("i"),
+                    textStyle: TextStyle(fontSize: 9),
+                    backgroundColor: Colors.cyan,
+                    largeSize: 9,
+                  ),
+                )
+              else if (showNotHaveImposter && !avatar.hasImpostor)
+                Tooltip(
+                  message: "Impostorなし",
+                  child: const material.Badge(
+                    label: Text("i"),
+                    textStyle: TextStyle(fontSize: 9),
+                    largeSize: 9,
+                  ),
+                ),
             ],
           ),
+          if (showTags)
+            Row(
+              children: [
+                if (showTags)
+                  Wrap(
+                    spacing: 2,
+                    children: avatar.avatar.tags
+                        .map((e) => material.Badge(
+                              label: Text(_tagStrings[e] ?? e),
+                              textStyle: TextStyle(fontSize: 10),
+                              backgroundColor: Colors.red,
+                            ))
+                        .toList(),
+                  ),
+              ],
+            ),
           if (detailed)
             Text(avatar.desctipion,
                 maxLines: 1, overflow: TextOverflow.ellipsis),
