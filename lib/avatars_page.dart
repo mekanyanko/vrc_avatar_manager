@@ -570,11 +570,12 @@ class _AvatarsPageState extends State<AvatarsPage> {
               },
               icon: const Icon(Icons.settings))),
       SizedBox(
-          width: 160,
+          width: 120,
           child: Tooltip(
               message: "アバターをクリックしたときに確認ダイアログを出します",
               child: CheckboxListTile(
                   title: const Text('変更確認'),
+                  contentPadding: EdgeInsets.fromLTRB(5, 0, 5, 0),
                   value: _confirmWhenChangeAvatar,
                   onChanged: _setConfirmWhenChangeAvatar))),
       Tooltip(
