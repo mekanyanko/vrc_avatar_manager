@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +25,7 @@ import 'package:vrc_avatar_manager/tag_edit_dialog.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
+import 'package:udp/udp.dart';
 
 class AvatarsPage extends StatefulWidget {
   const AvatarsPage({super.key, required this.accountId});
@@ -297,52 +299,87 @@ class _AvatarsPageState extends State<AvatarsPage> {
     }
   }
 
+  bool _useOSC = false;
+
   Future<void> _changeAvatar(String id) async {
     if (_confirmWhenChangeAvatar) {
       var avatar = _avatars.firstWhereOrNull((avatar) => avatar.id == id);
+      bool useOSC = _useOSC; // ローカル変数を作成
+
       var confirmed = await showDialog<bool>(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text("アバター変更"),
-              content: avatar == null
-                  ? const Text("?")
-                  : Column(mainAxisSize: MainAxisSize.min, children: [
-                      AvatarView(
-                        avatar: avatar,
-                        detailed: true,
-                        pcAvatarPackageInformation:
-                            _avatarPackageInformations[avatar.pc.main?.id],
-                        androidAvatarPackageInformation:
-                            _avatarPackageInformations[avatar.android.main?.id],
-                        showHaveImposter: _showHaveImposter,
-                        showNotHaveImposter: _showNotHaveImposter,
-                        showTags: _showTags,
-                      )
-                    ]),
-              actions: [
-                ElevatedButton(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text("アバター変更"),
+                content: avatar == null
+                    ? const Text("?")
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AvatarView(
+                            avatar: avatar,
+                            detailed: true,
+                            pcAvatarPackageInformation:
+                                _avatarPackageInformations[avatar.pc.main?.id],
+                            androidAvatarPackageInformation:
+                                _avatarPackageInformations[
+                                    avatar.android.main?.id],
+                            showHaveImposter: _showHaveImposter,
+                            showNotHaveImposter: _showNotHaveImposter,
+                            showTags: _showTags,
+                          ),
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: useOSC,
+                                onChanged: (value) {
+                                  setState(() {
+                                    useOSC = value ?? false;
+                                  });
+                                },
+                              ),
+                              const Text("OSCを使用する"),
+                            ],
+                          ),
+                        ],
+                      ),
+                actions: [
+                  ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
+                      _useOSC = useOSC; // 選択した値を _useOSC に反映
                       Navigator.of(context).pop(true);
                     },
-                    child: const Text("Yes")),
-                ElevatedButton(
+                    child: const Text("Yes"),
+                  ),
+                  ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop(false);
                     },
-                    child: const Text("No")),
-              ],
-            );
-          });
+                    child: const Text("No"),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
       if (confirmed != true) {
         return;
       }
     }
-    await _doChangeAvatar(id);
+
+    if (_useOSC) {
+      await _doChangeAvatarOSC(id);
+    } else {
+      await _doChangeAvatar(id);
+    }
   }
 
   Future<void> _doChangeAvatar(String id) async {
@@ -353,6 +390,43 @@ class _AvatarsPageState extends State<AvatarsPage> {
       _showError("Avatar change failed!");
       print(res.failure);
     }
+  }
+
+  Future<void> _doChangeAvatarOSC(String id) async {
+    const String vrchatOscAddress = "127.0.0.1";
+    const int vrchatOscPort = 9000;
+    const String oscPath = "/avatar/change";
+
+    // OSCメッセージのフォーマット（"/avatar/change" + id のOSCパケット）
+    List<int> messageBytes = _buildOscMessage(oscPath, id);
+
+    // UDPソケットを作成して送信
+    UDP sender = await UDP.bind(Endpoint.any());
+    await sender.send(
+        Uint8List.fromList(messageBytes),
+        Endpoint.unicast(InternetAddress(vrchatOscAddress),
+            port: Port(vrchatOscPort)));
+
+    print("Sent OSC message to VRChat: $oscPath $id");
+
+    sender.close();
+  }
+
+  // OSCメッセージのフォーマットを作成する関数
+  List<int> _buildOscMessage(String address, String argument) {
+    List<int> addressBytes = _oscStringToBytes(address);
+    List<int> typeTagBytes = _oscStringToBytes(",s"); // OSCの型タグ（文字列: "s"）
+    List<int> argumentBytes = _oscStringToBytes(argument);
+    return [...addressBytes, ...typeTagBytes, ...argumentBytes];
+  }
+
+// OSCの文字列をバイト配列に変換する関数（Null文字で終端し、4バイト区切り）
+  List<int> _oscStringToBytes(String value) {
+    List<int> bytes = value.codeUnits + [0]; // 文字列にNull終端を追加
+    while (bytes.length % 4 != 0) {
+      bytes.add(0); // 4バイト境界に揃える
+    }
+    return bytes;
   }
 
   void _toggleTagAvatar(String id) async {
