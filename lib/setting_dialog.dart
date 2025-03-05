@@ -173,7 +173,7 @@ class _SettingDialogState extends State<SettingDialog> {
                   _showTags = value!;
                 });
               },
-              title: const Text("タグを表示する"),
+              title: const Text("アバタータグを表示する"),
             ),
             SizedBox(height: 10),
             CheckboxListTile(
