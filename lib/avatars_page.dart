@@ -329,19 +329,21 @@ class _AvatarsPageState extends State<AvatarsPage> {
                             showNotHaveImposter: _showNotHaveImposter,
                             showTags: _showTags,
                           ),
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: useOSC,
-                                onChanged: (value) {
-                                  setState(() {
-                                    useOSC = value ?? false;
-                                  });
-                                },
-                              ),
-                              const Text("OSCを使用する"),
-                            ],
-                          ),
+                          SizedBox(
+                              width: 200,
+                              child: Tooltip(
+                                  message:
+                                      "OSCを使用してアバターをより素早く変更します（VRChat起動時のみ）",
+                                  child: CheckboxListTile(
+                                      title: const Text("OSCを使用"),
+                                      contentPadding:
+                                          EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                      value: useOSC,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          useOSC = value ?? false;
+                                        });
+                                      }))),
                         ],
                       ),
                 actions: [
