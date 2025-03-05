@@ -29,7 +29,6 @@ class WrapWithHeightState extends State<WrapWithHeight> {
 
   @override
   Widget build(BuildContext context) {
-    print("BUILD");
     Future<void>.microtask(_setSize);
     return Wrap(
       spacing: widget.spacing,
