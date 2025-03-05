@@ -58,6 +58,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   final Map<String, AvatarPackageInformation> _avatarPackageInformations = {};
 
   bool _confirmWhenChangeAvatar = false;
+  bool _useOsc = false;
   bool _ascending = false;
   SortBy _sortBy = SortBy.createdAt;
   bool _editTagAvatars = false;
@@ -111,12 +112,14 @@ class _AvatarsPageState extends State<AvatarsPage> {
   void _restoreSettings() async {
     final prefs = await Prefs.instance;
     var confirmWhenChangeAvatar = await prefs.confirmWhenChangeAvatar;
+    var useOsc = await prefs.useOsc;
     var selectSingleTag = await prefs.selectSingleTag;
     var ascending = await prefs.ascending;
     var sortBy = await prefs.sortBy;
     await _restoreSettingsInDialog();
     setState(() {
       _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
+      _useOsc = useOsc;
       _selectSingleTag = selectSingleTag;
       _ascending = ascending;
       _sortBy = sortBy;
@@ -298,13 +301,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
     }
   }
 
-  bool _useOSC = false;
-
   Future<void> _changeAvatar(String id) async {
     if (_confirmWhenChangeAvatar) {
       var avatar = _avatars.firstWhereOrNull((avatar) => avatar.id == id);
-      bool useOSC = _useOSC; // ローカル変数を作成
-
       var confirmed = await showDialog<bool>(
         context: context,
         builder: (context) {
@@ -338,11 +337,13 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                       title: const Text("OSCを使用"),
                                       contentPadding:
                                           EdgeInsets.fromLTRB(5, 0, 5, 0),
-                                      value: useOSC,
-                                      onChanged: (value) {
+                                      value: _useOsc,
+                                      onChanged: (value) async {
                                         setState(() {
-                                          useOSC = value ?? false;
+                                          _useOsc = value ?? false;
                                         });
+                                        final prefs = await Prefs.instance;
+                                        await prefs.setUseOsc(_useOsc);
                                       }))),
                         ],
                       ),
@@ -353,7 +354,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
-                      _useOSC = useOSC; // 選択した値を _useOSC に反映
                       Navigator.of(context).pop(true);
                     },
                     child: const Text("Yes"),
@@ -376,7 +376,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
       }
     }
 
-    if (_useOSC) {
+    if (_useOsc) {
       await _doChangeAvatarOSC(id);
     } else {
       await _doChangeAvatar(id);
@@ -415,11 +415,13 @@ class _AvatarsPageState extends State<AvatarsPage> {
 
   Future<void> _restoreSettingsInDialog() async {
     final prefs = await Prefs.instance;
+    var useOsc = await prefs.useOsc;
     var showHaveImposter = await prefs.showHaveImposter;
     var showNotHaveImposter = await prefs.showNotHaveImposter;
     var showTags = await prefs.showTags;
     var multiLineTagsView = await prefs.multiLineTagsView;
     setState(() {
+      _useOsc = useOsc;
       _showHaveImposter = showHaveImposter;
       _showNotHaveImposter = showNotHaveImposter;
       _showTags = showTags;
