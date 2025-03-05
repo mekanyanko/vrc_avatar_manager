@@ -879,7 +879,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
                                           spacing: 6,
                                           runSpacing: 6,
                                           onSizeChanged: (size) {
-                                            if (size != null) {
+                                            if (size != null &&
+                                                _tagsHeight != size.height) {
                                               setState(() {
                                                 _tagsHeight = size.height;
                                               });
