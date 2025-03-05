@@ -30,6 +30,7 @@ class SettingDialog extends StatefulWidget {
 class _SettingDialogState extends State<SettingDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  bool _useOsc = false;
   bool _fetchAvatarSize = false;
   bool _avatarPackageInformationDbUnityPackageSelectBugFixed = true;
   bool _avatarPackageInformationDbUnityPackageSelectBugFixedByAccount = true;
@@ -47,6 +48,7 @@ class _SettingDialogState extends State<SettingDialog> {
   void initState() {
     super.initState();
     Prefs.instance.then((prefs) async {
+      final useOsc = await prefs.useOsc;
       final fetchAvatarSize = await prefs.fetchAvatarSize;
       final avatarPackageInformationDbUnityPackageSelectBugFixed =
           await prefs.avatarPackageInformationDbUnityPackageSelectBugFixed;
@@ -59,6 +61,7 @@ class _SettingDialogState extends State<SettingDialog> {
       final showTags = await prefs.showTags;
       final multiLineTagsView = await prefs.multiLineTagsView;
       setState(() {
+        _useOsc = useOsc;
         _fetchAvatarSize = fetchAvatarSize;
         _avatarPackageInformationDbUnityPackageSelectBugFixed =
             avatarPackageInformationDbUnityPackageSelectBugFixed;
@@ -81,6 +84,17 @@ class _SettingDialogState extends State<SettingDialog> {
           autovalidateMode: AutovalidateMode.always,
           child: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Tooltip(
+                message: "OSCを使用してアバターをより素早く変更します（VRChat起動時のみ）",
+                child: CheckboxListTile(
+                  value: _useOsc,
+                  onChanged: (value) {
+                    setState(() {
+                      _useOsc = value!;
+                    });
+                  },
+                  title: const Text("アバター変更時にOSCを使用する"),
+                )),
             CheckboxListTile(
               value: _fetchAvatarSize,
               onChanged: (value) {
@@ -180,6 +194,7 @@ class _SettingDialogState extends State<SettingDialog> {
             }
 
             final prefs = await Prefs.instance;
+            await prefs.setUseOsc(_useOsc);
             await prefs.setFetchAvatarSize(_fetchAvatarSize);
             await prefs.setMultiLineTagsView(_multiLineTagsView);
             await prefs.setShowHaveImposter(_showHaveImposter);

@@ -57,6 +57,11 @@ dependencies:
   window_manager: ^0.4.3
   auto_updater: ^1.0.0
   filesize: ^2.0.1
+  osc:
+    # for fix recv decode bug
+    git:
+      url: https://github.com/dzink/osc.git
+      ref: 4c89bf0000a3b9676924726845d7db01c6125fa0
 
 dev_dependencies:
   flutter_test:

@@ -648,6 +648,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  osc:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "4c89bf0000a3b9676924726845d7db01c6125fa0"
+      resolved-ref: "4c89bf0000a3b9676924726845d7db01c6125fa0"
+      url: "https://github.com/dzink/osc.git"
+    source: git
+    version: "1.0.0"
   package_config:
     dependency: transitive
     description:

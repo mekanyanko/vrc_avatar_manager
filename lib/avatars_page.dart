@@ -16,6 +16,7 @@ import 'package:vrc_avatar_manager/order_dialog.dart';
 import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/setting_dialog.dart';
+import 'package:vrc_avatar_manager/vrc_osc.dart';
 import 'package:vrc_avatar_manager/wrap_with_height.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_button.dart';
@@ -57,6 +58,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   final Map<String, AvatarPackageInformation> _avatarPackageInformations = {};
 
   bool _confirmWhenChangeAvatar = false;
+  bool _useOsc = false;
   bool _ascending = false;
   SortBy _sortBy = SortBy.createdAt;
   bool _editTagAvatars = false;
@@ -110,12 +112,14 @@ class _AvatarsPageState extends State<AvatarsPage> {
   void _restoreSettings() async {
     final prefs = await Prefs.instance;
     var confirmWhenChangeAvatar = await prefs.confirmWhenChangeAvatar;
+    var useOsc = await prefs.useOsc;
     var selectSingleTag = await prefs.selectSingleTag;
     var ascending = await prefs.ascending;
     var sortBy = await prefs.sortBy;
     await _restoreSettingsInDialog();
     setState(() {
       _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
+      _useOsc = useOsc;
       _selectSingleTag = selectSingleTag;
       _ascending = ascending;
       _sortBy = sortBy;
@@ -301,27 +305,50 @@ class _AvatarsPageState extends State<AvatarsPage> {
     if (_confirmWhenChangeAvatar) {
       var avatar = _avatars.firstWhereOrNull((avatar) => avatar.id == id);
       var confirmed = await showDialog<bool>(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text("アバター変更"),
-              content: avatar == null
-                  ? const Text("?")
-                  : Column(mainAxisSize: MainAxisSize.min, children: [
-                      AvatarView(
-                        avatar: avatar,
-                        detailed: true,
-                        pcAvatarPackageInformation:
-                            _avatarPackageInformations[avatar.pc.main?.id],
-                        androidAvatarPackageInformation:
-                            _avatarPackageInformations[avatar.android.main?.id],
-                        showHaveImposter: _showHaveImposter,
-                        showNotHaveImposter: _showNotHaveImposter,
-                        showTags: _showTags,
-                      )
-                    ]),
-              actions: [
-                ElevatedButton(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text("アバター変更"),
+                content: avatar == null
+                    ? const Text("?")
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AvatarView(
+                            avatar: avatar,
+                            detailed: true,
+                            pcAvatarPackageInformation:
+                                _avatarPackageInformations[avatar.pc.main?.id],
+                            androidAvatarPackageInformation:
+                                _avatarPackageInformations[
+                                    avatar.android.main?.id],
+                            showHaveImposter: _showHaveImposter,
+                            showNotHaveImposter: _showNotHaveImposter,
+                            showTags: _showTags,
+                          ),
+                          SizedBox(
+                              width: 200,
+                              child: Tooltip(
+                                  message:
+                                      "OSCを使用してアバターをより素早く変更します（VRChat起動時のみ）",
+                                  child: CheckboxListTile(
+                                      title: const Text("OSCを使用"),
+                                      contentPadding:
+                                          EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                      value: _useOsc,
+                                      onChanged: (value) async {
+                                        setState(() {
+                                          _useOsc = value ?? false;
+                                        });
+                                        final prefs = await Prefs.instance;
+                                        await prefs.setUseOsc(_useOsc);
+                                      }))),
+                        ],
+                      ),
+                actions: [
+                  ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
@@ -329,20 +356,31 @@ class _AvatarsPageState extends State<AvatarsPage> {
                     onPressed: () {
                       Navigator.of(context).pop(true);
                     },
-                    child: const Text("Yes")),
-                ElevatedButton(
+                    child: const Text("Yes"),
+                  ),
+                  ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop(false);
                     },
-                    child: const Text("No")),
-              ],
-            );
-          });
+                    child: const Text("No"),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
       if (confirmed != true) {
         return;
       }
     }
-    await _doChangeAvatar(id);
+
+    if (_useOsc) {
+      await _doChangeAvatarOSC(id);
+    } else {
+      await _doChangeAvatar(id);
+    }
   }
 
   Future<void> _doChangeAvatar(String id) async {
@@ -353,6 +391,11 @@ class _AvatarsPageState extends State<AvatarsPage> {
       _showError("Avatar change failed!");
       print(res.failure);
     }
+  }
+
+  Future<void> _doChangeAvatarOSC(String id) async {
+    await VrcOsc().sendAvatar(id);
+    _showInfo("Avatar changed");
   }
 
   void _toggleTagAvatar(String id) async {
@@ -372,11 +415,13 @@ class _AvatarsPageState extends State<AvatarsPage> {
 
   Future<void> _restoreSettingsInDialog() async {
     final prefs = await Prefs.instance;
+    var useOsc = await prefs.useOsc;
     var showHaveImposter = await prefs.showHaveImposter;
     var showNotHaveImposter = await prefs.showNotHaveImposter;
     var showTags = await prefs.showTags;
     var multiLineTagsView = await prefs.multiLineTagsView;
     setState(() {
+      _useOsc = useOsc;
       _showHaveImposter = showHaveImposter;
       _showNotHaveImposter = showNotHaveImposter;
       _showTags = showTags;
