@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:udp/udp.dart';
 
-class VRCOSC {
+class VrcOsc {
   final _sendAddress = InternetAddress("127.0.0.1");
   final _sendPort = Port(9000);
 

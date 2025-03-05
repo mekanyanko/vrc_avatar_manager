@@ -16,7 +16,7 @@ import 'package:vrc_avatar_manager/order_dialog.dart';
 import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/setting_dialog.dart';
-import 'package:vrc_avatar_manager/vrcosc.dart';
+import 'package:vrc_avatar_manager/vrc_osc.dart';
 import 'package:vrc_avatar_manager/wrap_with_height.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_button.dart';
@@ -394,7 +394,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   }
 
   Future<void> _doChangeAvatarOSC(String id) async {
-    await VRCOSC().sendAvatar(id);
+    await VrcOsc().sendAvatar(id);
     _showInfo("Avatar changed");
   }
 
