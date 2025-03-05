@@ -648,6 +648,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  osc:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "4c89bf0000a3b9676924726845d7db01c6125fa0"
+      resolved-ref: "4c89bf0000a3b9676924726845d7db01c6125fa0"
+      url: "https://github.com/dzink/osc.git"
+    source: git
+    version: "1.0.0"
   package_config:
     dependency: transitive
     description:
@@ -1053,14 +1062,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  udp:
-    dependency: "direct main"
-    description:
-      name: udp
-      sha256: "50ea45d7ee80ad4c62de4ec0e8ed3ae65c36e9fe8cd0655a2bcd1503d2708e5a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.3"
   universal_io:
     dependency: transitive
     description:
