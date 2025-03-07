@@ -878,88 +878,75 @@ class _AvatarsPageState extends State<AvatarsPage> {
   Widget build(BuildContext context) {
     var filteredAvatars = _filteredAvatars.toList();
     return CallbackShortcuts(
-        bindings: _searchFocused
-            ? {}
-            : {
-                LogicalKeySet(
-                        LogicalKeyboardKey.control, LogicalKeyboardKey.keyA):
-                    _toggleAllAvatarsToTag,
-              },
-        child: FocusScope(
-            autofocus: true,
-            child: Scaffold(
-              appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                title: _title(context, filteredAvatars),
-                actions: _actions(context),
-                bottom: PreferredSize(
-                    preferredSize: Size.fromHeight(_tagsHeight),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 200, child: _bottomMenu(context)),
-                        SizedBox(
-                            width: MediaQuery.of(context).size.width - 200,
-                            child: ScrollConfiguration(
-                                behavior: CustomScrollBehavior(),
-                                child: _multiLineTagsView
-                                    ? Padding(
-                                        padding: EdgeInsets.all(2),
-                                        child: WrapWithHeight(
-                                          spacing: 6,
-                                          runSpacing: 6,
-                                          onSizeChanged: (size) {
-                                            if (size != null) {
-                                              setState(() {
-                                                _tagsHeight = size.height;
-                                              });
-                                            }
-                                          },
-                                          children: _tagButtons(context),
-                                        ))
-                                    : SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Padding(
-                                            padding: EdgeInsets.all(2),
-                                            child: Wrap(
-                                              spacing: 6,
-                                              children: _tagButtons(context),
-                                            )))))
-                      ],
-                    )),
-              ),
-              body: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: filteredAvatars
-                        .map((avatar) => ClickableView(
-                              key: Key(avatar.id),
-                              child: AvatarView(
-                                avatar: avatar,
-                                pcAvatarPackageInformation:
-                                    _avatarPackageInformations[
-                                        avatar.pc.main?.id],
-                                androidAvatarPackageInformation:
-                                    _avatarPackageInformations[
-                                        avatar.android.main?.id],
-                                selected: _editTagAvatarTag != null &&
-                                    _editTagAvatarTag!.avatarIds
-                                        .contains(avatar.id),
-                                showHaveImposter: _showHaveImposter,
-                                showNotHaveImposter: _showNotHaveImposter,
-                                showTags: _showTags,
-                              ),
-                              onTap: () => _editTagAvatarTag == null
-                                  ? _changeAvatar(avatar.id)
-                                  : _toggleTagAvatar(avatar.id),
-                            ))
-                        .toList(),
-                  ),
+      bindings: _searchFocused
+          ? {}
+          : {
+              LogicalKeySet(
+                      LogicalKeyboardKey.control, LogicalKeyboardKey.keyA):
+                  _toggleAllAvatarsToTag,
+            },
+      child: FocusScope(
+        autofocus: true,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            title: _title(context, filteredAvatars),
+            actions: _actions(context),
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(_tagsHeight),
+              child: IntrinsicHeight(
+                child: Row(
+                  children: [
+                    SizedBox(width: 200, child: _bottomMenu(context)),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(2),
+                        child: Wrap(
+                          spacing: 6, // タグの横の間隔
+                          runSpacing: 6, // タグの縦の間隔
+                          children: _tagButtons(context),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            )));
+            ),
+          ),
+          body: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: filteredAvatars
+                    .map((avatar) => ClickableView(
+                          key: Key(avatar.id),
+                          child: AvatarView(
+                            avatar: avatar,
+                            pcAvatarPackageInformation:
+                                _avatarPackageInformations[avatar.pc.main?.id],
+                            androidAvatarPackageInformation:
+                                _avatarPackageInformations[
+                                    avatar.android.main?.id],
+                            selected: _editTagAvatarTag != null &&
+                                _editTagAvatarTag!.avatarIds
+                                    .contains(avatar.id),
+                            showHaveImposter: _showHaveImposter,
+                            showNotHaveImposter: _showNotHaveImposter,
+                            showTags: _showTags,
+                          ),
+                          onTap: () => _editTagAvatarTag == null
+                              ? _changeAvatar(avatar.id)
+                              : _toggleTagAvatar(avatar.id),
+                        ))
+                    .toList(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
