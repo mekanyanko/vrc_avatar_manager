@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +16,7 @@ import 'package:vrc_avatar_manager/order_dialog.dart';
 import 'package:vrc_avatar_manager/performance_selector.dart';
 import 'package:vrc_avatar_manager/prefs.dart';
 import 'package:vrc_avatar_manager/setting_dialog.dart';
+import 'package:vrc_avatar_manager/vrc_osc.dart';
 import 'package:vrc_avatar_manager/wrap_with_height.dart';
 import 'package:vrc_avatar_manager/sort_by.dart';
 import 'package:vrc_avatar_manager/tag_button.dart';
@@ -25,7 +25,6 @@ import 'package:vrc_avatar_manager/tag_edit_dialog.dart';
 import 'package:vrc_avatar_manager/vrc_api.dart';
 import 'package:vrc_avatar_manager/vrc_icons.dart';
 import 'package:vrchat_dart/vrchat_dart.dart';
-import 'package:udp/udp.dart';
 
 class AvatarsPage extends StatefulWidget {
   const AvatarsPage({super.key, required this.accountId});
@@ -59,6 +58,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
   final Map<String, AvatarPackageInformation> _avatarPackageInformations = {};
 
   bool _confirmWhenChangeAvatar = false;
+  bool _useOsc = false;
   bool _ascending = false;
   SortBy _sortBy = SortBy.createdAt;
   bool _editTagAvatars = false;
@@ -112,12 +112,14 @@ class _AvatarsPageState extends State<AvatarsPage> {
   void _restoreSettings() async {
     final prefs = await Prefs.instance;
     var confirmWhenChangeAvatar = await prefs.confirmWhenChangeAvatar;
+    var useOsc = await prefs.useOsc;
     var selectSingleTag = await prefs.selectSingleTag;
     var ascending = await prefs.ascending;
     var sortBy = await prefs.sortBy;
     await _restoreSettingsInDialog();
     setState(() {
       _confirmWhenChangeAvatar = confirmWhenChangeAvatar;
+      _useOsc = useOsc;
       _selectSingleTag = selectSingleTag;
       _ascending = ascending;
       _sortBy = sortBy;
@@ -299,13 +301,9 @@ class _AvatarsPageState extends State<AvatarsPage> {
     }
   }
 
-  bool _useOSC = false;
-
   Future<void> _changeAvatar(String id) async {
     if (_confirmWhenChangeAvatar) {
       var avatar = _avatars.firstWhereOrNull((avatar) => avatar.id == id);
-      bool useOSC = _useOSC; // ローカル変数を作成
-
       var confirmed = await showDialog<bool>(
         context: context,
         builder: (context) {
@@ -330,19 +328,23 @@ class _AvatarsPageState extends State<AvatarsPage> {
                             showNotHaveImposter: _showNotHaveImposter,
                             showTags: _showTags,
                           ),
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: useOSC,
-                                onChanged: (value) {
-                                  setState(() {
-                                    useOSC = value ?? false;
-                                  });
-                                },
-                              ),
-                              const Text("OSCを使用する"),
-                            ],
-                          ),
+                          SizedBox(
+                              width: 200,
+                              child: Tooltip(
+                                  message:
+                                      "OSCを使用してアバターをより素早く変更します（VRChat起動時のみ）",
+                                  child: CheckboxListTile(
+                                      title: const Text("OSCを使用"),
+                                      contentPadding:
+                                          EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                      value: _useOsc,
+                                      onChanged: (value) async {
+                                        setState(() {
+                                          _useOsc = value ?? false;
+                                        });
+                                        final prefs = await Prefs.instance;
+                                        await prefs.setUseOsc(_useOsc);
+                                      }))),
                         ],
                       ),
                 actions: [
@@ -352,7 +354,6 @@ class _AvatarsPageState extends State<AvatarsPage> {
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
-                      _useOSC = useOSC; // 選択した値を _useOSC に反映
                       Navigator.of(context).pop(true);
                     },
                     child: const Text("Yes"),
@@ -375,7 +376,7 @@ class _AvatarsPageState extends State<AvatarsPage> {
       }
     }
 
-    if (_useOSC) {
+    if (_useOsc) {
       await _doChangeAvatarOSC(id);
     } else {
       await _doChangeAvatar(id);
@@ -393,40 +394,8 @@ class _AvatarsPageState extends State<AvatarsPage> {
   }
 
   Future<void> _doChangeAvatarOSC(String id) async {
-    const String vrchatOscAddress = "127.0.0.1";
-    const int vrchatOscPort = 9000;
-    const String oscPath = "/avatar/change";
-
-    // OSCメッセージのフォーマット（"/avatar/change" + id のOSCパケット）
-    List<int> messageBytes = _buildOscMessage(oscPath, id);
-
-    // UDPソケットを作成して送信
-    UDP sender = await UDP.bind(Endpoint.any());
-    await sender.send(
-        Uint8List.fromList(messageBytes),
-        Endpoint.unicast(InternetAddress(vrchatOscAddress),
-            port: Port(vrchatOscPort)));
-
-    print("Sent OSC message to VRChat: $oscPath $id");
-
-    sender.close();
-  }
-
-  // OSCメッセージのフォーマットを作成する関数
-  List<int> _buildOscMessage(String address, String argument) {
-    List<int> addressBytes = _oscStringToBytes(address);
-    List<int> typeTagBytes = _oscStringToBytes(",s"); // OSCの型タグ（文字列: "s"）
-    List<int> argumentBytes = _oscStringToBytes(argument);
-    return [...addressBytes, ...typeTagBytes, ...argumentBytes];
-  }
-
-// OSCの文字列をバイト配列に変換する関数（Null文字で終端し、4バイト区切り）
-  List<int> _oscStringToBytes(String value) {
-    List<int> bytes = value.codeUnits + [0]; // 文字列にNull終端を追加
-    while (bytes.length % 4 != 0) {
-      bytes.add(0); // 4バイト境界に揃える
-    }
-    return bytes;
+    await VrcOsc().sendAvatar(id);
+    _showInfo("Avatar changed");
   }
 
   void _toggleTagAvatar(String id) async {
@@ -446,11 +415,13 @@ class _AvatarsPageState extends State<AvatarsPage> {
 
   Future<void> _restoreSettingsInDialog() async {
     final prefs = await Prefs.instance;
+    var useOsc = await prefs.useOsc;
     var showHaveImposter = await prefs.showHaveImposter;
     var showNotHaveImposter = await prefs.showNotHaveImposter;
     var showTags = await prefs.showTags;
     var multiLineTagsView = await prefs.multiLineTagsView;
     setState(() {
+      _useOsc = useOsc;
       _showHaveImposter = showHaveImposter;
       _showNotHaveImposter = showNotHaveImposter;
       _showTags = showTags;
@@ -878,75 +849,89 @@ class _AvatarsPageState extends State<AvatarsPage> {
   Widget build(BuildContext context) {
     var filteredAvatars = _filteredAvatars.toList();
     return CallbackShortcuts(
-      bindings: _searchFocused
-          ? {}
-          : {
-              LogicalKeySet(
-                      LogicalKeyboardKey.control, LogicalKeyboardKey.keyA):
-                  _toggleAllAvatarsToTag,
-            },
-      child: FocusScope(
-        autofocus: true,
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: _title(context, filteredAvatars),
-            actions: _actions(context),
-            bottom: PreferredSize(
-              preferredSize: Size.fromHeight(_tagsHeight),
-              child: IntrinsicHeight(
-                child: Row(
-                  children: [
-                    SizedBox(width: 200, child: _bottomMenu(context)),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(2),
-                        child: Wrap(
-                          spacing: 6, // タグの横の間隔
-                          runSpacing: 6, // タグの縦の間隔
-                          children: _tagButtons(context),
-                        ),
-                      ),
-                    ),
-                  ],
+        bindings: _searchFocused
+            ? {}
+            : {
+                LogicalKeySet(
+                        LogicalKeyboardKey.control, LogicalKeyboardKey.keyA):
+                    _toggleAllAvatarsToTag,
+              },
+        child: FocusScope(
+            autofocus: true,
+            child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: _title(context, filteredAvatars),
+                actions: _actions(context),
+                bottom: PreferredSize(
+                    preferredSize: Size.fromHeight(_tagsHeight),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 200, child: _bottomMenu(context)),
+                        SizedBox(
+                            width: MediaQuery.of(context).size.width - 200,
+                            child: ScrollConfiguration(
+                                behavior: CustomScrollBehavior(),
+                                child: _multiLineTagsView
+                                    ? Padding(
+                                        padding: EdgeInsets.all(2),
+                                        child: WrapWithHeight(
+                                          spacing: 6,
+                                          runSpacing: 6,
+                                          onSizeChanged: (size) {
+                                            if (size != null &&
+                                                _tagsHeight != size.height) {
+                                              setState(() {
+                                                _tagsHeight = size.height;
+                                              });
+                                            }
+                                          },
+                                          children: _tagButtons(context),
+                                        ))
+                                    : SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Padding(
+                                            padding: EdgeInsets.all(2),
+                                            child: Wrap(
+                                              spacing: 6,
+                                              children: _tagButtons(context),
+                                            )))))
+                      ],
+                    )),
+              ),
+              body: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: filteredAvatars
+                        .map((avatar) => ClickableView(
+                              key: Key(avatar.id),
+                              child: AvatarView(
+                                avatar: avatar,
+                                pcAvatarPackageInformation:
+                                    _avatarPackageInformations[
+                                        avatar.pc.main?.id],
+                                androidAvatarPackageInformation:
+                                    _avatarPackageInformations[
+                                        avatar.android.main?.id],
+                                selected: _editTagAvatarTag != null &&
+                                    _editTagAvatarTag!.avatarIds
+                                        .contains(avatar.id),
+                                showHaveImposter: _showHaveImposter,
+                                showNotHaveImposter: _showNotHaveImposter,
+                                showTags: _showTags,
+                              ),
+                              onTap: () => _editTagAvatarTag == null
+                                  ? _changeAvatar(avatar.id)
+                                  : _toggleTagAvatar(avatar.id),
+                            ))
+                        .toList(),
+                  ),
                 ),
               ),
-            ),
-          ),
-          body: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: filteredAvatars
-                    .map((avatar) => ClickableView(
-                          key: Key(avatar.id),
-                          child: AvatarView(
-                            avatar: avatar,
-                            pcAvatarPackageInformation:
-                                _avatarPackageInformations[avatar.pc.main?.id],
-                            androidAvatarPackageInformation:
-                                _avatarPackageInformations[
-                                    avatar.android.main?.id],
-                            selected: _editTagAvatarTag != null &&
-                                _editTagAvatarTag!.avatarIds
-                                    .contains(avatar.id),
-                            showHaveImposter: _showHaveImposter,
-                            showNotHaveImposter: _showNotHaveImposter,
-                            showTags: _showTags,
-                          ),
-                          onTap: () => _editTagAvatarTag == null
-                              ? _changeAvatar(avatar.id)
-                              : _toggleTagAvatar(avatar.id),
-                        ))
-                    .toList(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+            )));
   }
 }

@@ -13,6 +13,7 @@ const _windowPositionX = "windowPositionX";
 const _windowPositionY = "windowPositionY";
 const _windowMaximized = "windowMaximized";
 const _confirmWhenChangeAvatar = "confirmWhenChangeAvatar";
+const _useOsc = "useOsc";
 const _selectSingleTag = "selectSingleTag";
 const _multiLineTagsView = "multiLineTagsView";
 const _ascending = "ascending";
@@ -136,6 +137,14 @@ class Prefs {
 
   Future<void> setConfirmWhenChangeAvatar(bool value) async {
     await _prefs.setBool(_confirmWhenChangeAvatar, value);
+  }
+
+  Future<bool> get useOsc async {
+    return _prefs.getBool(_useOsc) ?? false;
+  }
+
+  Future<void> setUseOsc(bool value) async {
+    await _prefs.setBool(_useOsc, value);
   }
 
   Future<bool> get selectSingleTag async {
