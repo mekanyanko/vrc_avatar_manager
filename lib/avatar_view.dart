@@ -97,7 +97,10 @@ class AvatarView extends StatelessWidget {
             )
           else
             image,
-          Text(avatar.name),
+          if (detailed)
+            SelectionArea(child: Text(avatar.name))
+          else
+            Text(avatar.name),
           Row(
             children: [
               if (avatar.pc.hasMain) VrcIcons.pc,
