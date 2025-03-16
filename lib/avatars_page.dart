@@ -714,17 +714,36 @@ class _AvatarsPageState extends State<AvatarsPage> {
       ),
       const SizedBox(width: 8),
       SizedBox(
-          width: 140,
-          child: TextField(
-            focusNode: _searchFocusNode,
-            controller: _searchController,
-            decoration: const InputDecoration(
-              labelText: "Search",
+        width: 140,
+        child: TextField(
+          focusNode: _searchFocusNode,
+          controller: _searchController,
+          decoration: InputDecoration(
+            labelText: "Search",
+            suffixIcon: SizedBox(
+              width: 15,
+              height: 15,
+              child: IconButton(
+                icon: const Icon(Icons.clear, size: 20),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 15,
+                  minHeight: 15,
+                ),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _search = "";
+                  });
+                },
+              ),
             ),
-            onChanged: (value) => setState(() {
-              _search = value;
-            }),
-          )),
+          ),
+          onChanged: (value) => setState(() {
+            _search = value;
+          }),
+        ),
+      ),
       const SizedBox(width: 8),
       Tooltip(
           message: "アバター一覧を再読込",
