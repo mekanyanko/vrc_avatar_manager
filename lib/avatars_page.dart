@@ -720,23 +720,17 @@ class _AvatarsPageState extends State<AvatarsPage> {
           controller: _searchController,
           decoration: InputDecoration(
             labelText: "Search",
-            suffixIcon: SizedBox(
-              width: 15,
-              height: 15,
-              child: IconButton(
-                icon: const Icon(Icons.clear, size: 20),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: 15,
-                  minHeight: 15,
-                ),
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {
-                    _search = "";
-                  });
-                },
-              ),
+            suffixIconConstraints: BoxConstraints(minWidth: 30, minHeight: 30),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.clear, size: 20),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _search = "";
+                });
+              },
             ),
           ),
           onChanged: (value) => setState(() {
